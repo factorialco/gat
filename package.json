@@ -1,0 +1,40 @@
+{
+  "name": "@factorialco/gat",
+  "version": "0.0.4",
+  "description": "TODO",
+  "bin": {
+    "gat": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "vitest run",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "author": "David Morcillo <david.morcillo@factorial.co>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/lodash": "^4.14.184",
+    "commander": "^9.4.0",
+    "typescript": "^4.7.4",
+    "vitest": "^0.18.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "yaml": "^2.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/factorialco/gat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/factorialco/gat/issues"
+  },
+  "homepage": "https://github.com/factorialco/gat#readme"
+}
