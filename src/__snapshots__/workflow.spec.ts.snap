@@ -9,8 +9,7 @@ on:
   push: null
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -39,8 +38,7 @@ on:
 jobs:
   job1:
     if: \${{ github.ref != 'refs/heads/main' }}
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - run: exit 0
@@ -82,8 +80,7 @@ defaults:
     working-directory: frontend
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Do something
@@ -100,11 +97,10 @@ on:
   push: null
 env:
   NODE_VERSION: '16'
-  ENABLED: true
+  ENABLED: 'true'
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Do something
@@ -126,8 +122,7 @@ on:
       - opened
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Do something
@@ -144,11 +139,10 @@ on:
   push: null
 env:
   NODE_VERSION: '16'
-  ENABLED: true
+  ENABLED: 'true'
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
@@ -166,8 +160,7 @@ on:
   push: null
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     concurrency:
       group: concurrency-group-job1-foo
@@ -186,8 +179,7 @@ on:
   push: null
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - id: random-number
@@ -208,15 +200,13 @@ on:
       - opened
 jobs:
   job1:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Do something
         run: exit 0
   job2:
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     needs:
       - job1

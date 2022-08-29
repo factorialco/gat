@@ -47,7 +47,7 @@ describe("Workflow", () => {
     workflow
       .on("push")
       .setEnv("NODE_VERSION", "16")
-      .setEnv("ENABLED", true)
+      .setEnv("ENABLED", "true")
       .addJob("job1", {
         steps: [
           {
@@ -140,7 +140,7 @@ describe("Workflow", () => {
     workflow
       .on("push")
       .setEnv("NODE_VERSION", "16")
-      .setEnv("ENABLED", true)
+      .setEnv("ENABLED", "true")
       .addJob("job1", {
         steps: [
           {
