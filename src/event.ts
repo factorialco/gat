@@ -2,7 +2,8 @@ export type EventName =
   | "push"
   | "pull_request"
   | "pull_request_review"
-  | "workflow_run";
+  | "workflow_run"
+  | "workflow_dispatch";
 
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions
@@ -12,6 +13,8 @@ export type EventOptions<T extends EventName> = T extends "push"
   ? PullRequestReviewEventOptions
   : T extends "workflow_run"
   ? WorkflowRunEventOptions
+  : T extends "workflow_dispatch"
+  ? WorkflowDispatchEventOptions
   : never;
 
 interface PushEventOptions {
@@ -32,6 +35,16 @@ interface PullRequestReviewEventOptions {
 interface WorkflowRunEventOptions {
   workflows?: string[];
   types?: Array<"completed">;
+}
+
+interface WorkflowDispatchInput {
+  description: string;
+  required?: boolean;
+  type?: "choice" | "boolean";
+  options?: string[];
+}
+interface WorkflowDispatchEventOptions {
+  inputs?: Record<string, WorkflowDispatchInput>;
 }
 
 export interface Event {

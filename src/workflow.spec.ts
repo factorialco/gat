@@ -183,4 +183,26 @@ describe("Workflow", () => {
 
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("support workflow dispatch event", () => {
+    const workflow = new Workflow("Workflow dispatch");
+    workflow
+      .on("workflow_dispatch", {
+        inputs: {
+          foo: {
+            description: "A foo input",
+            required: true,
+          },
+          bar: {
+            description: "A bar input",
+            type: "choice",
+            options: ["bar", "baz"],
+          },
+        },
+      })
+      .addJob("job1", {
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
