@@ -4,8 +4,8 @@ export interface ConcurrencyGroup {
 }
 
 export interface Matrix {
-  elements: Array<{ id: string; options: any[] }>;
-  extra?: Array<Record<string, any>>;
+  elements: Array<{ id: string; options: Array<string | number | boolean> }>;
+  extra?: Array<Record<string, string | number | boolean>>;
 }
 
 export interface Service {

@@ -51,7 +51,7 @@ export class Workflow<
     return this;
   }
 
-  setEnv(name: string, value: any) {
+  setEnv(name: string, value: string) {
     this.env = [...this.env, { name, value }];
     return this;
   }
@@ -64,7 +64,7 @@ export class Workflow<
     const runnerName = runsOn ?? this.defaultRunner();
     const isSelfHosted = !DEFAULT_RUNNERS.includes(runnerName as string);
 
-    return isSelfHosted ? ["self-hosted", runnerName] : [runnerName];
+    return isSelfHosted ? ["self-hosted", runnerName] : runnerName;
   }
 
   compile() {

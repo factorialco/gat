@@ -1,6 +1,6 @@
 {
   "name": "@factorialco/gat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "TODO",
   "bin": {
     "gat": "dist/cli.js"
@@ -15,13 +15,21 @@
     "prepare": "npm run build",
     "prepublishOnly": "vitest run",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "author": "David Morcillo <david.morcillo@factorial.co>",
   "license": "ISC",
   "devDependencies": {
     "@types/lodash": "^4.14.184",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "commander": "^9.4.0",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "2.7.1",
     "typescript": "^4.7.4",
     "vitest": "^0.18.1"
   },

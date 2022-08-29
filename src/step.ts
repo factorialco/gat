@@ -14,5 +14,5 @@ export interface RunStep extends BaseStep {
 
 export interface UseStep extends BaseStep {
   uses: string;
-  with?: any;
+  with?: Record<string, string | number | boolean>;
 }
