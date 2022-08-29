@@ -92,6 +92,7 @@ export class Workflow<
               ifExpression,
               runsOn,
               matrix,
+              env,
               steps,
               dependsOn,
               services,
@@ -126,6 +127,7 @@ export class Workflow<
                     },
                   }
                 : undefined,
+              env,
               steps: steps.map(
                 ({ id, name, ifExpression, workingDirectory, ...options }) => ({
                   id,
