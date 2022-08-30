@@ -22,22 +22,24 @@ cli
       fs.mkdirSync(path.join(folder, "..", "workflows"));
     }
 
-    for await (const templateFile of fs.readdirSync(folder)) {
-      if (!templateFile.match(/^shared$/)) {
-        const { stdout } = await execPromise(
-          `npx ts-node ${path.join(folder, templateFile)}`
-        );
-        await writeFilePromise(
-          path.join(
-            folder,
-            "..",
-            "workflows",
-            templateFile.replace(".ts", ".yml")
-          ),
-          stdout
-        );
-      }
-    }
+    await Promise.all(
+      fs.readdirSync(folder).map(async (templateFile) => {
+        if (!templateFile.match(/^shared$/)) {
+          const { stdout } = await execPromise(
+            `npx ts-node ${path.join(folder, templateFile)}`
+          );
+          await writeFilePromise(
+            path.join(
+              folder,
+              "..",
+              "workflows",
+              templateFile.replace(".ts", ".yml")
+            ),
+            stdout
+          );
+        }
+      })
+    );
 
     process.exit(0);
   });
