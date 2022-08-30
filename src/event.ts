@@ -29,7 +29,7 @@ interface PullRequestEventOptions {
   branches?: string[];
   paths?: string[];
   types?: Array<
-    "opened" | "reopened" | "synchronize" | "labeled" | "unlabeled"
+    "opened" | "closed" | "reopened" | "synchronize" | "labeled" | "unlabeled"
   >;
 }
 
