@@ -26,10 +26,11 @@ interface PushEventOptions {
 }
 
 interface PullRequestEventOptions {
+  branches?: string[];
+  paths?: string[];
   types?: Array<
     "opened" | "reopened" | "synchronize" | "labeled" | "unlabeled"
   >;
-  paths?: string[];
 }
 
 interface PullRequestReviewEventOptions {
