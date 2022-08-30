@@ -89,6 +89,7 @@ export class Workflow<
           ({
             name,
             options: {
+              prettyName,
               ifExpression,
               runsOn,
               matrix,
@@ -103,6 +104,7 @@ export class Workflow<
           }) => [
             name,
             {
+              name: prettyName,
               if: ifExpression,
               "runs-on": this.assignRunner(runsOn),
               "timeout-minutes": timeout ?? 15,

@@ -16,6 +16,7 @@ export interface Service {
   options?: string;
 }
 export interface JobOptions<Step, Runner, Name> {
+  prettyName?: string;
   ifExpression?: string;
   runsOn?: Runner;
   timeout?: number;

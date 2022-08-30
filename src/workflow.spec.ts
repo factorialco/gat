@@ -214,4 +214,14 @@ describe("Workflow", () => {
       });
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("supports a pretty name for the job", () => {
+    const workflow = new Workflow("Job with pretty name")
+      .on("push")
+      .addJob("job1", {
+        prettyName: "My pretty name",
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
