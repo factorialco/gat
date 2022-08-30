@@ -3,7 +3,8 @@ export type EventName =
   | "pull_request"
   | "pull_request_review"
   | "workflow_run"
-  | "workflow_dispatch";
+  | "workflow_dispatch"
+  | "schedule";
 
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions
@@ -15,6 +16,8 @@ export type EventOptions<T extends EventName> = T extends "push"
   ? WorkflowRunEventOptions
   : T extends "workflow_dispatch"
   ? WorkflowDispatchEventOptions
+  : T extends "schedule"
+  ? ScheduleEventOptions
   : never;
 
 interface PushEventOptions {
@@ -46,6 +49,8 @@ interface WorkflowDispatchInput {
 interface WorkflowDispatchEventOptions {
   inputs?: Record<string, WorkflowDispatchInput>;
 }
+
+type ScheduleEventOptions = Array<{ cron: string }>;
 
 export interface Event {
   name: EventName;

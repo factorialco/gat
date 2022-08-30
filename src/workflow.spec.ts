@@ -205,4 +205,13 @@ describe("Workflow", () => {
       });
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("supports schedule event", () => {
+    const workflow = new Workflow("Schedule")
+      .on("schedule", [{ cron: "0 4 * * 1-5" }])
+      .addJob("job1", {
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
