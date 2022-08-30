@@ -1,6 +1,6 @@
 {
   "name": "@factorialco/gat",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "TODO",
   "bin": {
     "gat": "dist/cli.js"
@@ -23,6 +23,7 @@
   "author": "David Morcillo <david.morcillo@factorial.co>",
   "license": "ISC",
   "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
     "@types/lodash": "^4.14.184",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
@@ -34,8 +35,8 @@
     "vitest": "^0.18.1"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "yaml": "^2.1.1"
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21"
   },
   "repository": {
     "type": "git",

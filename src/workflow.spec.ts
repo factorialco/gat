@@ -237,4 +237,21 @@ describe("Workflow", () => {
       });
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("allows multiline strings", () => {
+    const workflow = new Workflow("Multiline strings")
+      .on("push")
+      .addJob("job1", {
+        steps: [
+          {
+            name: "Do something",
+            run: `
+              echo foo
+              exit 0
+            `,
+          },
+        ],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
