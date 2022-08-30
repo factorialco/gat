@@ -4,7 +4,8 @@ export type EventName =
   | "pull_request_review"
   | "workflow_run"
   | "workflow_dispatch"
-  | "schedule";
+  | "schedule"
+  | "pull_request_target";
 
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions

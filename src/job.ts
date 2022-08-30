@@ -17,6 +17,7 @@ export interface Service {
 }
 export interface JobOptions<Step, Runner, Name> {
   prettyName?: string;
+  permissions?: object;
   ifExpression?: string;
   runsOn?: Runner;
   timeout?: number;

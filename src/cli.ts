@@ -6,6 +6,7 @@ import { Command } from "commander";
 import { promisify } from "util";
 
 const execPromise = promisify(exec);
+const writeFilePromise = promisify(fs.writeFile);
 
 const cli = new Command();
 
@@ -26,7 +27,7 @@ cli
         const { stdout } = await execPromise(
           `npx ts-node ${path.join(folder, templateFile)}`
         );
-        fs.writeFileSync(
+        await writeFilePromise(
           path.join(
             folder,
             "..",

@@ -224,4 +224,17 @@ describe("Workflow", () => {
       });
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("allows permissions into jobs", () => {
+    const workflow = new Workflow("Job with permissions")
+      .on("push")
+      .addJob("job1", {
+        permissions: {
+          contents: "read",
+          "pull-requests": "write",
+        },
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
