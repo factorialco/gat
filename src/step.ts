@@ -4,6 +4,7 @@ export interface BaseStep {
   env?: Record<string, string>;
   ifExpression?: string;
   workingDirectory?: string;
+  continueOnError?: boolean;
 }
 
 export type Step = RunStep | UseStep;

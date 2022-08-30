@@ -1,6 +1,6 @@
 {
   "name": "@factorialco/gat",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "TODO",
   "bin": {
     "gat": "dist/cli.js"

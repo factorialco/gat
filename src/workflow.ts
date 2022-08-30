@@ -129,10 +129,18 @@ export class Workflow<
                 : undefined,
               env,
               steps: steps.map(
-                ({ id, name, ifExpression, workingDirectory, ...options }) => ({
+                ({
+                  id,
+                  name,
+                  ifExpression,
+                  workingDirectory,
+                  continueOnError,
+                  ...options
+                }) => ({
                   id,
                   name,
                   if: ifExpression,
+                  "continue-on-error": continueOnError,
                   "working-directory": workingDirectory,
                   ...options,
                 })
