@@ -4,6 +4,7 @@ import kebabCase from "lodash/kebabCase";
 import { Job, JobOptions } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
 import { BaseStep, Step } from "./step";
+import { compact, trim } from "lodash";
 
 const DEFAULT_RUNNERS = ["ubuntu-22.04"];
 
@@ -162,6 +163,17 @@ export class Workflow<
         noRefs: true,
         lineWidth: 200,
         noCompatMode: true,
+        replacer: (_, value) => {
+          if (typeof value === "string") {
+            if (value.startsWith("\n")) {
+              return compact(value.split("\n").map((str) => trim(str))).join(
+                "\n"
+              );
+            }
+            return value;
+          }
+          return value;
+        },
       }
     )}`;
 

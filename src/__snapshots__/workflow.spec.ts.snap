@@ -121,11 +121,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Do something
-        run: |2-
-
-                        echo foo
-                        exit 0
-                      
+        run: |-
+          echo foo
+          exit 0
 "
 `;
 
