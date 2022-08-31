@@ -163,17 +163,6 @@ export class Workflow<
         noRefs: true,
         lineWidth: 200,
         noCompatMode: true,
-        replacer: (_, value) => {
-          if (typeof value === "string") {
-            if (value.startsWith("\n")) {
-              return compact(value.split("\n").map((str) => trim(str))).join(
-                "\n"
-              );
-            }
-            return value;
-          }
-          return value;
-        },
       }
     )}`;
 

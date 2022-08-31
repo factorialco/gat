@@ -245,10 +245,8 @@ describe("Workflow", () => {
         steps: [
           {
             name: "Do something",
-            run: `
-              echo foo
-              exit 0
-            `,
+            run: `echo foo
+exit 0`,
           },
         ],
       });
