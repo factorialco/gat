@@ -47,6 +47,7 @@ interface WorkflowDispatchInput {
   required?: boolean;
   type?: "choice" | "boolean";
   options?: string[];
+  default?: string | boolean;
 }
 interface WorkflowDispatchEventOptions {
   inputs?: Record<string, WorkflowDispatchInput>;
