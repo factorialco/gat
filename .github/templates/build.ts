@@ -9,6 +9,7 @@ const setupNodeStep: UseStep = {
 };
 
 new Workflow("Build")
+  .on("push", { branches: ["main"] })
   .on("pull_request")
   .addJob("build", {
     steps: [

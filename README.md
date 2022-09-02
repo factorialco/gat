@@ -1,4 +1,4 @@
-# gat ![Build](https://github.com/factorialco/gat/actions/workflows/build.yml/badge.svg) [![npm version](https://badge.fury.io/js/@factorialco%2Fgat.svg)](https://badge.fury.io/js/@factorialco%2Fgat)
+# gat ![Build](https://github.com/factorialco/gat/actions/workflows/build.yml/badge.svg?branch=main) [![npm version](https://badge.fury.io/js/@factorialco%2Fgat.svg)](https://badge.fury.io/js/@factorialco%2Fgat)
 
 The `gat` project is a tool to **write your GitHub Actions workflows using TypeScript**.
 
