@@ -1,10 +1,9 @@
 import { dump } from "js-yaml";
 import kebabCase from "lodash/kebabCase";
 
-import { Job, JobOptions } from "./job";
+import { ConcurrencyGroup, Job, JobOptions } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
 import { BaseStep, Step } from "./step";
-import { compact, trim } from "lodash";
 
 const DEFAULT_RUNNERS = ["ubuntu-22.04"];
 
@@ -26,6 +25,7 @@ export class Workflow<
   jobs: Array<Job<JobStep, Runner, JobName>>;
   defaultOptions: DefaultOptions | null;
   env: EnvVar[];
+  concurrencyGroup?: ConcurrencyGroup;
 
   constructor(public name: string) {
     this.events = [];
@@ -57,6 +57,11 @@ export class Workflow<
     return this;
   }
 
+  setConcurrencyGroup(concurrencyGroup: ConcurrencyGroup) {
+    this.concurrencyGroup = concurrencyGroup;
+    return this;
+  }
+
   defaultRunner() {
     return "ubuntu-22.04";
   }
@@ -74,6 +79,12 @@ export class Workflow<
       on: Object.fromEntries(
         this.events.map(({ name, options }) => [name, options ? options : null])
       ),
+      concurrency: this.concurrencyGroup
+        ? {
+            group: this.concurrencyGroup.groupSuffix,
+            "cancel-in-progress": this.concurrencyGroup.cancelPrevious,
+          }
+        : undefined,
       defaults: this.defaultOptions
         ? {
             run: {

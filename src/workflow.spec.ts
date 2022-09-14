@@ -252,4 +252,22 @@ exit 0`,
       });
     expect(workflow.compile()).toMatchSnapshot();
   });
+
+  it("allows concurrency groups at workflow level", () => {
+    const workflow = new Workflow("Concurrency at workflow level")
+      .on("push")
+      .setConcurrencyGroup({
+        groupSuffix: "${{ github.workflow }}-${{ github.ref }}",
+        cancelPrevious: true,
+      })
+      .addJob("job1", {
+        steps: [
+          {
+            name: "Do something",
+            run: "exit 0",
+          },
+        ],
+      });
+    expect(workflow.compile()).toMatchSnapshot();
+  });
 });
