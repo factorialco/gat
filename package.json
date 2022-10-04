@@ -1,7 +1,7 @@
 {
   "name": "@factorialco/gat",
-  "version": "0.0.20",
-  "description": "TODO",
+  "version": "1.0.0",
+  "description": "Write your GitHub Actions workflows using TypeScript",
   "bin": {
     "gat": "dist/cli.js"
   },
