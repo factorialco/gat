@@ -12,7 +12,7 @@ const folder = path.join(process.cwd(), ".github", "templates");
 
 const parseFile = async (templateFile: string) => {
   // NOTE: can we improve this using ts-node or typescript programatically?
-  const { stdout } = await execPromise(`npx ts-node ${templateFile}`);
+  const { stdout } = await execPromise(`npx ts-node --swc -T ${templateFile}`);
 
   await writeFilePromise(
     path.join(
