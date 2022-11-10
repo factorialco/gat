@@ -1,7 +1,7 @@
 import { dump } from "js-yaml";
 import kebabCase from "lodash/kebabCase";
 
-import { ConcurrencyGroup, Job, JobOptions } from "./job";
+import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
 import { BaseStep, Step } from "./step";
 
@@ -45,7 +45,7 @@ export class Workflow<
   }
 
   addJob<T extends string>(
-    name: T,
+    name: StringWithNoSpaces<T>,
     options: JobOptions<JobStep, Runner, JobName>
   ): Workflow<JobStep, Runner, JobName | T> {
     this.jobs = [...this.jobs, { name, options }];
