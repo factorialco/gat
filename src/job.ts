@@ -30,6 +30,14 @@ export interface JobOptions<Step, Runner, Name> {
   outputs?: Record<string, string>;
 }
 
+export type StringWithNoSpaces<T> = T extends `${string} ${string}`
+  ? never
+  : T extends ` ${string}`
+  ? never
+  : T extends `${string} `
+  ? never
+  : T;
+
 export interface Job<Step, Runner, Name> {
   name: string;
   options: JobOptions<Step, Runner, Name>;

@@ -4,7 +4,7 @@ import path from "path";
 import { exec } from "child_process";
 import { Command } from "commander";
 import { promisify } from "util";
-import debounce from "lodash/debounce"
+import debounce from "lodash/debounce";
 
 const execPromise = promisify(exec);
 const writeFilePromise = promisify(fs.writeFile);
@@ -27,7 +27,9 @@ const parseFile = async (templateFile: string) => {
 
 const cli = new Command();
 
-cli.version("1.0.0").description("Write your GitHub Actions workflows using TypeScript");
+cli
+  .version("1.0.0")
+  .description("Write your GitHub Actions workflows using TypeScript");
 
 cli
   .command("build")
@@ -55,18 +57,26 @@ cli
 
 cli
   .command("watch")
-  .description("Watch file changes in your Gat templates folder and transpile them automatically.")
+  .description(
+    "Watch file changes in your Gat templates folder and transpile them automatically."
+  )
   .action(async () => {
     const parseWatchedFile = debounce(async (fileName) => {
-      const start = process.hrtime.bigint()
-      process.stdout.write(`😸 Detected change on file ${fileName}. Transpiling... `)
+      const start = process.hrtime.bigint();
+      process.stdout.write(
+        `😸 Detected change on file ${fileName}. Transpiling... `
+      );
       await parseFile(path.join(folder, fileName.toString()));
-      console.log(`Done in ${((Number(process.hrtime.bigint() - start)) / 1_000_000).toFixed(2)}ms`)
-    }, 1000)
-    console.log(`😼 Watching file changes on ${folder}...`)
+      console.log(
+        `Done in ${(
+          Number(process.hrtime.bigint() - start) / 1_000_000
+        ).toFixed(2)}ms`
+      );
+    }, 1000);
+    console.log(`😼 Watching file changes on ${folder}...`);
     fs.watch(folder).on("change", (_eventName, fileName) => {
-      parseWatchedFile(fileName)
-    })
-  })
+      parseWatchedFile(fileName);
+    });
+  });
 
 cli.parse(process.argv);
