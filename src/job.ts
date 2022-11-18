@@ -28,6 +28,7 @@ export interface JobOptions<Step, Runner, Name> {
   matrix?: Matrix;
   steps: Step[];
   outputs?: Record<string, string>;
+  workingDirectory?: string;
 }
 
 export type StringWithNoSpaces<T> = T extends `${string} ${string}`

@@ -113,6 +113,7 @@ export class Workflow<
               timeout,
               concurrency,
               outputs,
+              workingDirectory,
             },
           }) => [
             name,
@@ -144,6 +145,7 @@ export class Workflow<
                   }
                 : undefined,
               env,
+              workingDirectory,
               steps: steps.map(
                 ({
                   id,
