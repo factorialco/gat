@@ -145,7 +145,13 @@ export class Workflow<
                   }
                 : undefined,
               env,
-              workingDirectory,
+              defaults: workingDirectory
+                ? {
+                    run: {
+                      "working-directory": workingDirectory,
+                    },
+                  }
+                : undefined,
               steps: steps.map(
                 ({
                   id,
