@@ -14,6 +14,7 @@ export interface Service {
   env?: Record<string, string>;
   ports: string[];
   options?: string;
+  volumes?: string[];
 }
 export interface JobOptions<Step, Runner, Name> {
   prettyName?: string;
