@@ -159,6 +159,7 @@ export class Workflow<
                   ifExpression,
                   workingDirectory,
                   continueOnError,
+                  timeout,
                   ...options
                 }) => ({
                   id,
@@ -166,6 +167,7 @@ export class Workflow<
                   if: ifExpression,
                   "continue-on-error": continueOnError,
                   "working-directory": workingDirectory,
+                  "timeout-minutes": timeout,
                   ...options,
                 })
               ),

@@ -40,6 +40,7 @@ interface PullRequestReviewEventOptions {
 interface WorkflowRunEventOptions {
   workflows?: string[];
   types?: Array<"completed">;
+  branches?: string[];
 }
 
 interface WorkflowDispatchInput {

@@ -5,6 +5,7 @@ export interface BaseStep {
   ifExpression?: string;
   workingDirectory?: string;
   continueOnError?: boolean;
+  timeout?: number;
 }
 
 export type Step = RunStep | UseStep;
