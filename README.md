@@ -89,4 +89,4 @@ TODO
 
 ## License
 
-TODO
+MIT
