@@ -32,6 +32,7 @@ export interface JobOptions<Step, Runner, Name> {
   workingDirectory?: string;
 }
 
+// TODO: not only spaces
 export type StringWithNoSpaces<T> = T extends `${string} ${string}`
   ? never
   : T extends ` ${string}`

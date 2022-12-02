@@ -16,31 +16,21 @@ interface EnvVar {
   value: string;
 }
 
-export interface IWorkflow<
-  JobStep extends BaseStep = Step,
-  Runner = typeof DEFAULT_RUNNERS,
-  JobName = never
-> {
+export interface IWorkflow<JobStep, Runner, JobName> {
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
     options: JobOptions<JobStep, Runner, JobName>
   ): IWorkflow<JobStep, Runner, JobName | T>;
-
   on<T extends EventName>(
     name: T,
     options?: EventOptions<T>
   ): IWorkflow<JobStep, Runner, JobName>;
-
   addDefaults(options: DefaultOptions): IWorkflow<JobStep, Runner, JobName>;
-
   setEnv(name: string, value: string): IWorkflow<JobStep, Runner, JobName>;
-
   setConcurrencyGroup(
     concurrencyGroup: ConcurrencyGroup
   ): IWorkflow<JobStep, Runner, JobName>;
-
   defaultRunner(): string;
-
   compile(): string;
 }
 
@@ -76,7 +66,7 @@ export class Workflow<
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
     options: JobOptions<JobStep, Runner, JobName>
-  ): IWorkflow<JobStep, Runner, T | JobName> {
+  ): Workflow<JobStep, Runner, T | JobName> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
   }
