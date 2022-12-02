@@ -18,7 +18,8 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "gat": "npx ts-node src/cli.ts"
   },
   "author": "David Morcillo <david.morcillo@factorial.co>",
   "license": "ISC",

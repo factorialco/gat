@@ -16,11 +16,40 @@ interface EnvVar {
   value: string;
 }
 
-export class Workflow<
+export interface IWorkflow<
   JobStep extends BaseStep = Step,
   Runner = typeof DEFAULT_RUNNERS,
   JobName = never
 > {
+  addJob<T extends string>(
+    name: StringWithNoSpaces<T>,
+    options: JobOptions<JobStep, Runner, JobName>
+  ): IWorkflow<JobStep, Runner, JobName | T>;
+
+  on<T extends EventName>(
+    name: T,
+    options?: EventOptions<T>
+  ): IWorkflow<JobStep, Runner, JobName>;
+
+  addDefaults(options: DefaultOptions): IWorkflow<JobStep, Runner, JobName>;
+
+  setEnv(name: string, value: string): IWorkflow<JobStep, Runner, JobName>;
+
+  setConcurrencyGroup(
+    concurrencyGroup: ConcurrencyGroup
+  ): IWorkflow<JobStep, Runner, JobName>;
+
+  defaultRunner(): string;
+
+  compile(): string;
+}
+
+export class Workflow<
+  JobStep extends BaseStep = Step,
+  Runner = typeof DEFAULT_RUNNERS,
+  JobName = never
+> implements IWorkflow<JobStep, Runner, JobName>
+{
   events: Event[];
   jobs: Array<Job<JobStep, Runner, JobName>>;
   defaultOptions: DefaultOptions | null;
@@ -47,7 +76,7 @@ export class Workflow<
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
     options: JobOptions<JobStep, Runner, JobName>
-  ): Workflow<JobStep, Runner, JobName | T> {
+  ): IWorkflow<JobStep, Runner, T | JobName> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
   }
@@ -186,8 +215,6 @@ export class Workflow<
         noCompatMode: true,
       }
     )}`;
-
-    console.log(compiled);
 
     return compiled;
   }

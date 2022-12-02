@@ -32,27 +32,19 @@ cli
   .description("Write your GitHub Actions workflows using TypeScript");
 
 cli
+  .command("init")
+  .description("Create gat scaffold for this project")
+  .action(() => {
+    fs.mkdirSync(path.join(process.cwd(), ".gat"));
+  });
+
+cli
   .command("build")
   .description("Transpile all Gat templates into GitHub Actions workflows.")
-  .argument("[file]", "(Optional) A Gat template file")
-  .action(async (file) => {
-    if (!fs.existsSync(path.join(folder, "..", "workflows"))) {
-      fs.mkdirSync(path.join(folder, "..", "workflows"));
-    }
-
-    if (file !== undefined) {
-      await parseFile(file);
-    } else {
-      await Promise.all(
-        fs.readdirSync(folder).map(async (templateFile) => {
-          if (!templateFile.match(/^shared$/)) {
-            await parseFile(`${path.join(folder, templateFile)}`);
-          }
-        })
-      );
-    }
-
-    process.exit(0);
+  .action(() => {
+    const childProcess = exec("npx ts-node .gat/main.ts");
+    childProcess.stdout?.pipe(process.stdout);
+    childProcess.stderr?.pipe(process.stderr);
   });
 
 cli
