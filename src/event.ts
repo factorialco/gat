@@ -5,7 +5,8 @@ export type EventName =
   | "workflow_run"
   | "workflow_dispatch"
   | "schedule"
-  | "pull_request_target";
+  | "pull_request_target"
+  | "merge_group";
 
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions
@@ -19,6 +20,8 @@ export type EventOptions<T extends EventName> = T extends "push"
   ? WorkflowDispatchEventOptions
   : T extends "schedule"
   ? ScheduleEventOptions
+  : T extends "merge_group"
+  ? MergeGroupEventOptions
   : never;
 
 interface PushEventOptions {
@@ -55,6 +58,10 @@ interface WorkflowDispatchEventOptions {
 }
 
 type ScheduleEventOptions = Array<{ cron: string }>;
+
+interface MergeGroupEventOptions {
+  types?: Array<"checks_requested">;
+}
 
 export interface Event {
   name: EventName;
