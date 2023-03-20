@@ -46,7 +46,7 @@ interface WorkflowRunEventOptions {
 interface WorkflowDispatchInput {
   description: string;
   required?: boolean;
-  type?: "choice" | "boolean";
+  type?: "choice" | "boolean" | "string";
   options?: string[];
   default?: string | boolean;
 }
