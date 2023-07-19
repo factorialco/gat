@@ -26,7 +26,7 @@ export interface JobOptions<Step, Runner, Name> {
   services?: Record<string, Service>;
   env?: Record<string, string>;
   concurrency?: ConcurrencyGroup;
-  matrix?: Matrix;
+  matrix?: Matrix | string;
   steps: Step[];
   outputs?: Record<string, string>;
   workingDirectory?: string;

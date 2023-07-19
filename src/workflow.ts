@@ -136,7 +136,7 @@ export class Workflow<
               strategy: matrix
                 ? {
                     "fail-fast": false,
-                    matrix: {
+                    matrix: typeof matrix === 'string' ? matrix : {
                       ...Object.fromEntries(
                         matrix.elements.map(({ id, options }) => [id, options])
                       ),
