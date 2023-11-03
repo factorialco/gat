@@ -28,4 +28,3 @@ jobs:
         run: npm run lint
       - name: Check format problems
         run: npm run format:check
-

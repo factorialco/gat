@@ -8,7 +8,7 @@ const setupNodeStep: UseStep = {
   uses: "actions/setup-node@v3",
 };
 
-new Workflow("Build")
+export default new Workflow("Build")
   .on("push", { branches: ["main"] })
   .on("pull_request")
   .addJob("build", {
@@ -30,5 +30,4 @@ new Workflow("Build")
       { name: "Check lint problems", run: "npm run lint" },
       { name: "Check format problems", run: "npm run format:check" },
     ],
-  })
-  .compile();
+  });
