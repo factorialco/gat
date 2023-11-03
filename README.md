@@ -18,10 +18,10 @@ npm i -D @factorialco/gat typescript ts-node commander @swc/core
 
 ### Writing a template
 
-The `gat` CLI assumes that your templates are inside `.github/templates`. Let's create our first template:
+The `gat` CLI assumes that you have a `index.ts` file inside `.github/templates`. Let's create our first template:
 
 ```ts
-// .github/templates/my-first-workflow.ts
+// .github/templates/index.ts
 import { Workflow } from "@factorialco/gat";
 
 new Workflow("My first workflow")
@@ -39,10 +39,10 @@ new Workflow("My first workflow")
       },
     ],
   })
-  .compile();
+  .compile('my-first-workflow.yml');
 ```
 
-Notice that you need to call the `compile()` method at the end.
+Notice that you need to call the `compile()` method at the end, passing the file name of the generated Github Actions workflow.
 
 ### Compiling your templates
 
