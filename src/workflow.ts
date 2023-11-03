@@ -1,9 +1,14 @@
 import { dump } from "js-yaml";
 import kebabCase from "lodash/kebabCase";
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
 
 import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
 import { BaseStep, Step } from "./step";
+
+const writeFilePromise = promisify(fs.writeFile);
 
 const DEFAULT_RUNNERS = ["ubuntu-22.04"];
 
@@ -73,7 +78,7 @@ export class Workflow<
     return isSelfHosted ? ["self-hosted", runnerName] : runnerName;
   }
 
-  compile() {
+  compile(filepath?: string) {
     const result = {
       name: this.name,
       on: Object.fromEntries(
@@ -136,12 +141,18 @@ export class Workflow<
               strategy: matrix
                 ? {
                     "fail-fast": false,
-                    matrix: typeof matrix === 'string' ? matrix : {
-                      ...Object.fromEntries(
-                        matrix.elements.map(({ id, options }) => [id, options])
-                      ),
-                      include: matrix.extra,
-                    },
+                    matrix:
+                      typeof matrix === "string"
+                        ? matrix
+                        : {
+                            ...Object.fromEntries(
+                              matrix.elements.map(({ id, options }) => [
+                                id,
+                                options,
+                              ])
+                            ),
+                            include: matrix.extra,
+                          },
                   }
                 : undefined,
               env,
@@ -187,8 +198,11 @@ export class Workflow<
       }
     )}`;
 
-    console.log(compiled);
+    if (!filepath) return compiled;
 
-    return compiled;
+    return writeFilePromise(
+      path.join(process.cwd(), ".github", "workflows", filepath),
+      compiled
+    );
   }
 }

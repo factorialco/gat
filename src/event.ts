@@ -6,7 +6,7 @@ export type EventName =
   | "workflow_dispatch"
   | "schedule"
   | "pull_request_target"
-  | "repository_dispatch"
+  | "repository_dispatch";
 
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions
@@ -60,7 +60,7 @@ interface WorkflowDispatchEventOptions {
 type ScheduleEventOptions = Array<{ cron: string }>;
 
 interface RepositoryDispatchEventOptions {
-  types: string[]
+  types: string[];
 }
 
 export interface Event {
