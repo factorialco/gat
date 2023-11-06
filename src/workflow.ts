@@ -3,6 +3,7 @@ import kebabCase from "lodash/kebabCase";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import fetch from 'node-fetch';
 
 import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
