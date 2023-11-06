@@ -6,7 +6,7 @@ import { promisify } from "util";
 
 import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
-import { BaseStep, Step } from "./step";
+import { Step, isUseStep } from "./step";
 
 const writeFilePromise = promisify(fs.writeFile);
 
@@ -21,10 +21,53 @@ interface EnvVar {
   value: string;
 }
 
+interface Tag {
+  name: string;
+  commit: {
+    sha: string;
+  };
+}
+
+const chainAttackCache: Record<string, string> = {};
+
+const supplyChainAttack = async (step: Step) => {
+  if (!isUseStep(step)) return;
+
+  const uses = step.uses;
+
+  if (!uses) return uses;
+
+  if (chainAttackCache[uses]) return chainAttackCache[uses];
+
+  const match = uses.match(/(?<repository>.*)@(?<version>.*)/);
+
+  if (!match) return uses;
+
+  const { repository, version } = match.groups as {
+    repository: string;
+    version: string;
+  };
+
+  const response = await fetch(
+    `https://api.github.com/repos/${repository}/tags`,
+  );
+  const tags = (await response.json()) as Tag[];
+
+  const tag = tags.find((tag) => tag.name === version);
+
+  if (!tag) return uses;
+
+  const result = `${repository}@${tag.commit.sha}`;
+
+  chainAttackCache[uses] = result;
+
+  return result;
+};
+
 export class Workflow<
-  JobStep extends BaseStep = Step,
+  JobStep extends Step = Step,
   Runner = typeof DEFAULT_RUNNERS,
-  JobName = never
+  JobName = never,
 > {
   events: Event[];
   jobs: Array<Job<JobStep, Runner, JobName>>;
@@ -51,7 +94,7 @@ export class Workflow<
 
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
-    options: JobOptions<JobStep, Runner, JobName>
+    options: JobOptions<JobStep, Runner, JobName>,
   ): Workflow<JobStep, Runner, JobName | T> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
@@ -78,11 +121,14 @@ export class Workflow<
     return isSelfHosted ? ["self-hosted", runnerName] : runnerName;
   }
 
-  compile(filepath?: string) {
+  async compile(filepath?: string) {
     const result = {
       name: this.name,
       on: Object.fromEntries(
-        this.events.map(({ name, options }) => [name, options ? options : null])
+        this.events.map(({ name, options }) => [
+          name,
+          options ? options : null,
+        ]),
       ),
       concurrency: this.concurrencyGroup
         ? {
@@ -102,90 +148,96 @@ export class Workflow<
           ? Object.fromEntries(this.env.map(({ name, value }) => [name, value]))
           : undefined,
       jobs: Object.fromEntries(
-        this.jobs.map(
-          ({
-            name,
-            options: {
-              prettyName,
-              permissions,
-              ifExpression,
-              runsOn,
-              matrix,
-              env,
-              steps,
-              dependsOn,
-              services,
-              timeout,
-              concurrency,
-              outputs,
-              workingDirectory,
-            },
-          }) => [
-            name,
-            {
-              name: prettyName,
-              permissions,
-              if: ifExpression,
-              "runs-on": this.assignRunner(runsOn),
-              "timeout-minutes": timeout ?? 15,
-              needs: dependsOn,
-              services,
-              concurrency: concurrency
-                ? {
-                    group: `${kebabCase(this.name)}-${name}-${
-                      concurrency.groupSuffix
-                    }`,
-                    "cancel-in-progress": concurrency.cancelPrevious,
-                  }
-                : undefined,
-              strategy: matrix
-                ? {
-                    "fail-fast": false,
-                    matrix:
-                      typeof matrix === "string"
-                        ? matrix
-                        : {
-                            ...Object.fromEntries(
-                              matrix.elements.map(({ id, options }) => [
-                                id,
-                                options,
-                              ])
-                            ),
-                            include: matrix.extra,
-                          },
-                  }
-                : undefined,
-              env,
-              defaults: workingDirectory
-                ? {
-                    run: {
+        await Promise.all(
+          this.jobs.map(
+            async ({
+              name,
+              options: {
+                prettyName,
+                permissions,
+                ifExpression,
+                runsOn,
+                matrix,
+                env,
+                steps,
+                dependsOn,
+                services,
+                timeout,
+                concurrency,
+                outputs,
+                workingDirectory,
+              },
+            }) => [
+              name,
+              {
+                name: prettyName,
+                permissions,
+                if: ifExpression,
+                "runs-on": this.assignRunner(runsOn),
+                "timeout-minutes": timeout ?? 15,
+                needs: dependsOn,
+                services,
+                concurrency: concurrency
+                  ? {
+                      group: `${kebabCase(this.name)}-${name}-${
+                        concurrency.groupSuffix
+                      }`,
+                      "cancel-in-progress": concurrency.cancelPrevious,
+                    }
+                  : undefined,
+                strategy: matrix
+                  ? {
+                      "fail-fast": false,
+                      matrix:
+                        typeof matrix === "string"
+                          ? matrix
+                          : {
+                              ...Object.fromEntries(
+                                matrix.elements.map(({ id, options }) => [
+                                  id,
+                                  options,
+                                ]),
+                              ),
+                              include: matrix.extra,
+                            },
+                    }
+                  : undefined,
+                env,
+                defaults: workingDirectory
+                  ? {
+                      run: {
+                        "working-directory": workingDirectory,
+                      },
+                    }
+                  : undefined,
+                steps: await Promise.all(
+                  steps.map(async (step) => {
+                    const {
+                      id,
+                      name,
+                      ifExpression,
+                      workingDirectory,
+                      continueOnError,
+                      timeout,
+                      ...options
+                    } = step;
+                    return {
+                      id,
+                      name,
+                      if: ifExpression,
+                      "continue-on-error": continueOnError,
                       "working-directory": workingDirectory,
-                    },
-                  }
-                : undefined,
-              steps: steps.map(
-                ({
-                  id,
-                  name,
-                  ifExpression,
-                  workingDirectory,
-                  continueOnError,
-                  timeout,
-                  ...options
-                }) => ({
-                  id,
-                  name,
-                  if: ifExpression,
-                  "continue-on-error": continueOnError,
-                  "working-directory": workingDirectory,
-                  "timeout-minutes": timeout,
-                  ...options,
-                })
-              ),
-              outputs,
-            },
-          ]
-        )
+                      "timeout-minutes": timeout,
+                      ...options,
+                      uses: await supplyChainAttack(step),
+                    };
+                  }),
+                ),
+                outputs,
+              },
+            ],
+          ),
+        ),
       ),
     };
 
@@ -195,14 +247,14 @@ export class Workflow<
         noRefs: true,
         lineWidth: 200,
         noCompatMode: true,
-      }
+      },
     )}`;
 
     if (!filepath) return compiled;
 
     return writeFilePromise(
       path.join(process.cwd(), ".github", "workflows", filepath),
-      compiled
+      compiled,
     );
   }
 }

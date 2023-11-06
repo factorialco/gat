@@ -25,8 +25,8 @@ cli
     await execPromise(
       `npx ts-node ${process.env["GAT_BUILD_FLAGS"] ?? "--swc -T"} ${path.join(
         folder,
-        "index.ts"
-      )}`
+        "index.ts",
+      )}`,
     );
 
     process.exit(0);

@@ -39,7 +39,7 @@ new Workflow("My first workflow")
       },
     ],
   })
-  .compile('my-first-workflow.yml');
+  .compile("my-first-workflow.yml");
 ```
 
 Notice that you need to call the `compile()` method at the end, passing the file name of the generated Github Actions workflow.
@@ -50,12 +50,6 @@ You can build your templates running this command in your root folder:
 
 ```bash
 npx gat build
-```
-
-Alternatively you can also compile a single template:
-
-```bash
-npx gat build .github/templates/some-workflow.ts
 ```
 
 Following the previous example, you should see now a file `.github/workflows/my-first-workflow.yml` like this:

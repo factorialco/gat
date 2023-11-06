@@ -18,3 +18,7 @@ export interface UseStep extends BaseStep {
   uses: string;
   with?: Record<string, string | number | boolean>;
 }
+
+export const isUseStep = (step: Step): step is UseStep => {
+  return (step as UseStep).uses !== undefined;
+};

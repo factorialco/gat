@@ -3,7 +3,7 @@ import { RunStep, UseStep } from "./step";
 import { Workflow } from "./workflow";
 
 describe("Workflow", () => {
-  it("generates a simple workflow", () => {
+  it("generates a simple workflow", async () => {
     const workflow = new Workflow("Simple");
     workflow
       .on("pull_request", { types: ["opened"] })
@@ -15,10 +15,10 @@ describe("Workflow", () => {
         dependsOn: ["job1"],
       });
 
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows multiple events", () => {
+  it("allows multiple events", async () => {
     const workflow = new Workflow("Multiple events");
     workflow
       .on("push", { branches: ["main"] })
@@ -26,10 +26,10 @@ describe("Workflow", () => {
       .addJob("job1", {
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows declaring default options", () => {
+  it("allows declaring default options", async () => {
     const workflow = new Workflow("Default options");
     workflow
       .on("push", { branches: ["main"] })
@@ -39,10 +39,10 @@ describe("Workflow", () => {
       .addJob("job1", {
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows declaring environment variables", () => {
+  it("allows declaring environment variables", async () => {
     const workflow = new Workflow("With Environment variables");
     workflow
       .on("push")
@@ -56,10 +56,10 @@ describe("Workflow", () => {
           },
         ],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows using a concurrency group", () => {
+  it("allows using a concurrency group", async () => {
     const workflow = new Workflow("Concurrency group");
     workflow.on("push").addJob("job1", {
       concurrency: {
@@ -72,10 +72,10 @@ describe("Workflow", () => {
         },
       ],
     });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows using outputs", () => {
+  it("allows using outputs", async () => {
     const workflow = new Workflow("Using outputs");
     workflow.on("push").addJob("job1", {
       steps: [
@@ -88,10 +88,10 @@ describe("Workflow", () => {
         "random-number": "${{ steps.random-number.outputs.random-number }}",
       },
     });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows conditional jobs", () => {
+  it("allows conditional jobs", async () => {
     const workflow = new Workflow("Conditional job");
     workflow.on("push").addJob("job1", {
       ifExpression: "${{ github.ref != 'refs/heads/main' }}",
@@ -101,10 +101,10 @@ describe("Workflow", () => {
         },
       ],
     });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows a job matrix", () => {
+  it("allows a job matrix", async () => {
     const workflow = new Workflow("Conditional job");
     workflow.on("push").addJob("job1", {
       matrix: {
@@ -132,10 +132,10 @@ describe("Workflow", () => {
         },
       ],
     });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows uses steps", () => {
+  it("allows uses steps", async () => {
     const workflow = new Workflow("Uses steps");
     workflow
       .on("push")
@@ -151,10 +151,10 @@ describe("Workflow", () => {
           },
         ],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows custom types in a workflow", () => {
+  it("allows custom types in a workflow", async () => {
     interface MyUseStep extends UseStep {
       uses: "custom-action";
       with: { foo: string };
@@ -163,7 +163,7 @@ describe("Workflow", () => {
     type CustomRunner = "standard-runner";
 
     const workflow = new Workflow<CustomStep, CustomRunner>(
-      "With custom types"
+      "With custom types",
     );
 
     workflow.on("push").addJob("job1", {
@@ -181,10 +181,10 @@ describe("Workflow", () => {
       ],
     });
 
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("support workflow dispatch event", () => {
+  it("support workflow dispatch event", async () => {
     const workflow = new Workflow("Workflow dispatch");
     workflow
       .on("workflow_dispatch", {
@@ -203,29 +203,29 @@ describe("Workflow", () => {
       .addJob("job1", {
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("supports schedule event", () => {
+  it("supports schedule event", async () => {
     const workflow = new Workflow("Schedule")
       .on("schedule", [{ cron: "0 4 * * 1-5" }])
       .addJob("job1", {
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("supports a pretty name for the job", () => {
+  it("supports a pretty name for the job", async () => {
     const workflow = new Workflow("Job with pretty name")
       .on("push")
       .addJob("job1", {
         prettyName: "My pretty name",
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows permissions into jobs", () => {
+  it("allows permissions into jobs", async () => {
     const workflow = new Workflow("Job with permissions")
       .on("push")
       .addJob("job1", {
@@ -235,10 +235,10 @@ describe("Workflow", () => {
         },
         steps: [{ name: "Do something", run: "exit 0" }],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows multiline strings", () => {
+  it("allows multiline strings", async () => {
     const workflow = new Workflow("Multiline strings")
       .on("push")
       .addJob("job1", {
@@ -250,10 +250,10 @@ exit 0`,
           },
         ],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 
-  it("allows concurrency groups at workflow level", () => {
+  it("allows concurrency groups at workflow level", async () => {
     const workflow = new Workflow("Concurrency at workflow level")
       .on("push")
       .setConcurrencyGroup({
@@ -268,6 +268,6 @@ exit 0`,
           },
         ],
       });
-    expect(workflow.compile()).toMatchSnapshot();
+    expect(await workflow.compile()).toMatchSnapshot();
   });
 });
