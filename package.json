@@ -37,9 +37,9 @@
     "vitest": "^0.34.6"
   },
   "dependencies": {
+    "axios": "^1.6.0",
     "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
-    "node-fetch": "^3.3.2"
+    "lodash": "^4.17.21"
   },
   "repository": {
     "type": "git",

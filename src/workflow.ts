@@ -3,7 +3,7 @@ import kebabCase from "lodash/kebabCase";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
@@ -49,10 +49,10 @@ const supplyChainAttack = async (step: Step) => {
     version: string;
   };
 
-  const response = await fetch(
+  const response = await axios.get(
     `https://api.github.com/repos/${repository}/tags`,
   );
-  const tags = (await response.json()) as Tag[];
+  const tags = response.data as Tag[];
 
   const tag = tags.find((tag) => tag.name === version);
 
