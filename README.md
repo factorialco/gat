@@ -11,7 +11,7 @@ _Why `gat`?_ The name is an acronym of "GitHub Actions Template Generator" witho
 Install the main package and its dependencies using the following command:
 
 ```bash
-npm i -D @factorialco/gat typescript ts-node commander @swc/core
+npm i -D @factorialco/gat typescript tsx commander @swc/core
 ```
 
 ## Usage

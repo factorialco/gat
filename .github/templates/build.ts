@@ -1,4 +1,4 @@
-import { UseStep, Workflow } from "../../src";
+import { type UseStep, Workflow } from "../../src";
 
 const checkoutStep: UseStep = {
   uses: "actions/checkout@v3",
@@ -22,7 +22,7 @@ export default new Workflow("Build")
       {
         name: "Ensure workflows are up to date",
         run: `
-          npx ts-node src/cli.ts build
+          npx tsx src/cli.ts build
           git diff --exit-code .github/workflows/build.yml
         `,
       },

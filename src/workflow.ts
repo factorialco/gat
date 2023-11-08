@@ -3,11 +3,11 @@ import kebabCase from "lodash/kebabCase";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
-import axios from 'axios';
+import axios from "axios";
 
 import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
 import type { Event, EventName, EventOptions } from "./event";
-import { Step, isUseStep } from "./step";
+import { type Step, isUseStep } from "./step";
 
 const writeFilePromise = promisify(fs.writeFile);
 
@@ -31,8 +31,10 @@ interface Tag {
 
 const chainAttackCache: Record<string, string> = {};
 
-const supplyChainAttack = async (step: Step) => {
+const supplyChainAttack = async (step: Step, enabled: boolean = false) => {
   if (!isUseStep(step)) return;
+
+  if (!enabled) return step.uses;
 
   const uses = step.uses;
 
