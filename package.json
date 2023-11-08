@@ -5,6 +5,7 @@
   "bin": {
     "gat": "dist/cli.js"
   },
+  "type": "module",
   "main": "dist/index.js",
   "files": [
     "dist/**/*"
