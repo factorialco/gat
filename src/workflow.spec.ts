@@ -160,14 +160,14 @@ describe("Workflow", () => {
       with: { foo: string };
     }
     type CustomStep = RunStep | MyUseStep;
-    type CustomRunner = "standard-runner";
+    type CustomRunner = ["self-hosted", "standard-runner"];
 
     const workflow = new Workflow<CustomStep, CustomRunner>(
       "With custom types",
     );
 
     workflow.on("push").addJob("job1", {
-      runsOn: "standard-runner",
+      runsOn: ["self-hosted", "standard-runner"],
       steps: [
         {
           run: "echo 'Do something'",

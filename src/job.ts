@@ -16,11 +16,11 @@ export interface Service {
   options?: string;
   volumes?: string[];
 }
-export interface JobOptions<Step, Runner, Name> {
+export interface JobOptions<Step, RunnerDefinition, Name> {
   prettyName?: string;
   permissions?: object;
   ifExpression?: string;
-  runsOn?: Runner;
+  runsOn?: RunnerDefinition;
   timeout?: number;
   dependsOn?: Array<Name>;
   services?: Record<string, Service>;
@@ -40,7 +40,7 @@ export type StringWithNoSpaces<T> = T extends `${string} ${string}`
   ? never
   : T;
 
-export interface Job<Step, Runner, Name> {
+export interface Job<Step, RunnerDefinition, Name> {
   name: string;
-  options: JobOptions<Step, Runner, Name>;
+  options: JobOptions<Step, RunnerDefinition, Name>;
 }

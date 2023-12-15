@@ -11,8 +11,6 @@ import { type Step, isUseStep } from "./step";
 
 const writeFilePromise = promisify(fs.writeFile);
 
-const DEFAULT_RUNNERS = ["ubuntu-22.04"];
-
 interface DefaultOptions {
   workingDirectory: string;
 }
@@ -28,6 +26,11 @@ interface Tag {
     sha: string;
   };
 }
+
+export type RunnerDefinition =
+  | string
+  | { group: string; labels?: string[] }
+  | ["self-hosted", string];
 
 const chainAttackCache: Record<string, string> = {};
 
@@ -69,7 +72,7 @@ const supplyChainAttack = async (step: Step, enabled: boolean = false) => {
 
 export class Workflow<
   JobStep extends Step = Step,
-  Runner = typeof DEFAULT_RUNNERS,
+  Runner extends RunnerDefinition = RunnerDefinition,
   JobName = never,
 > {
   events: Event[];
@@ -115,13 +118,6 @@ export class Workflow<
 
   defaultRunner() {
     return "ubuntu-22.04";
-  }
-
-  private assignRunner(runsOn?: Runner) {
-    const runnerName = runsOn ?? this.defaultRunner();
-    const isSelfHosted = !DEFAULT_RUNNERS.includes(runnerName as string);
-
-    return isSelfHosted ? ["self-hosted", runnerName] : runnerName;
   }
 
   async compile(filepath?: string) {
@@ -176,7 +172,7 @@ export class Workflow<
                 name: prettyName,
                 permissions,
                 if: ifExpression,
-                "runs-on": this.assignRunner(runsOn),
+                "runs-on": runsOn ?? this.defaultRunner(),
                 "timeout-minutes": timeout ?? 15,
                 needs: dependsOn,
                 services,
