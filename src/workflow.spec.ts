@@ -270,4 +270,20 @@ exit 0`,
       });
     expect(await workflow.compile()).toMatchSnapshot();
   });
+
+  it("allows creating jobs with concurrency set to null", async () => {
+    const workflow = new Workflow("Without concurrency")
+      .on("push")
+      .addJob("job1", {
+        concurrency: null,
+        steps: [
+          {
+            name: "Do something",
+            run: "exit 0",
+          },
+        ],
+      });
+
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
 });

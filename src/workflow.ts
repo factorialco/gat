@@ -79,7 +79,7 @@ export class Workflow<
   jobs: Array<Job<JobStep, Runner, JobName>>;
   defaultOptions: DefaultOptions | null;
   env: EnvVar[];
-  concurrencyGroup?: ConcurrencyGroup;
+  concurrencyGroup?: ConcurrencyGroup | null;
 
   constructor(public name: string) {
     this.events = [];
@@ -111,7 +111,7 @@ export class Workflow<
     return this;
   }
 
-  setConcurrencyGroup(concurrencyGroup: ConcurrencyGroup) {
+  setConcurrencyGroup(concurrencyGroup: ConcurrencyGroup | null) {
     this.concurrencyGroup = concurrencyGroup;
     return this;
   }

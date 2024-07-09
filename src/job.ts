@@ -1,7 +1,7 @@
-export interface ConcurrencyGroup {
+export type ConcurrencyGroup = {
   groupSuffix: string;
   cancelPrevious: boolean;
-}
+};
 
 export interface Matrix {
   elements: Array<{ id: string; options: Array<string | number | boolean> }>;
@@ -25,7 +25,7 @@ export interface JobOptions<Step, RunnerDefinition, Name> {
   dependsOn?: Array<Name>;
   services?: Record<string, Service>;
   env?: Record<string, string>;
-  concurrency?: ConcurrencyGroup;
+  concurrency?: ConcurrencyGroup | null;
   matrix?: Matrix | string;
   steps: Step[];
   outputs?: Record<string, string>;
