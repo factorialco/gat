@@ -16,7 +16,7 @@ export interface RunStep extends BaseStep {
 
 export interface UseStep extends BaseStep {
   uses: string;
-  with?: Record<string, string | number | boolean>;
+  with?: Record<string, string | number | boolean | object>;
 }
 
 export const isUseStep = (step: Step): step is UseStep => {
