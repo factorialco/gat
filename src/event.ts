@@ -33,7 +33,27 @@ interface PullRequestEventOptions {
   branches?: string[];
   paths?: string[];
   types?: Array<
-    "opened" | "closed" | "reopened" | "synchronize" | "labeled" | "unlabeled"
+    | "assigned"
+    | "unassigned"
+    | "labeled"
+    | "unlabeled"
+    | "opened"
+    | "edited"
+    | "closed"
+    | "reopened"
+    | "synchronize"
+    | "converted_to_draft"
+    | "locked"
+    | "unlocked"
+    | "enqueued"
+    | "dequeued"
+    | "milestoned"
+    | "demilestoned"
+    | "ready_for_review"
+    | "review_requested"
+    | "review_request_removed"
+    | "auto_merge_enabled"
+    | "auto_merge_disabled"
   >;
 }
 
