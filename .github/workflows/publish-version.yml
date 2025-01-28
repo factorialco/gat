@@ -1,0 +1,57 @@
+name: Publish Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type (patch/minor/major)'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+
+jobs:
+  publish-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Bump version
+        run: npm version ${{ inputs.bump_type }}
+
+      - name: Push changes
+        run: |
+          git remote set-url origin git@github.com:${{ github.repository }}.git
+          git push --follow-tags
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Print summary
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "Published version ${VERSION} to NPM" >> $GITHUB_STEP_SUMMARY
+          echo "Package: https://www.npmjs.com/package/@factorialco/gat/v/${VERSION}" >> $GITHUB_STEP_SUMMARY
