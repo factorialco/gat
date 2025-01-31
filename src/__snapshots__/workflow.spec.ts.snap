@@ -283,11 +283,11 @@ jobs:
   job1:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-    outputs:
-      random-number: \${{ steps.random-number.outputs.random-number }}
     steps:
       - id: random-number
         run: echo \\"::set-output name=random-number::$RANDOM\\"
+    outputs:
+      random-number: \${{ steps.random-number.outputs.random-number }}
 "
 `;
 

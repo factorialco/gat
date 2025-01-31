@@ -213,7 +213,6 @@ export class Workflow<
                     },
                   }
                 : undefined,
-              outputs,
             };
 
             if ("uses" in jobOptions) {
@@ -224,6 +223,7 @@ export class Workflow<
                   uses: jobOptions.uses,
                   with: jobOptions.with,
                   secrets: jobOptions.secrets,
+                  outputs,
                 },
               ];
             }
@@ -255,6 +255,7 @@ export class Workflow<
                     };
                   }),
                 ),
+                outputs,
               },
             ];
           }),
