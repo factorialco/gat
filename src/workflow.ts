@@ -5,7 +5,13 @@ import path from "path";
 import { promisify } from "util";
 import axios from "axios";
 
-import { ConcurrencyGroup, Job, JobOptions, StringWithNoSpaces } from "./job";
+import {
+  ConcurrencyGroup,
+  Job,
+  JobOptions,
+  StringWithNoSpaces,
+  UsesJobOptions,
+} from "./job";
 import type { Event, EventName, EventOptions } from "./event";
 import { type Step, isUseStep } from "./step";
 
@@ -100,7 +106,7 @@ export class Workflow<
 
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
-    options: JobOptions<JobStep, Runner, JobName>,
+    options: JobOptions<JobStep, Runner, JobName> | UsesJobOptions,
   ): Workflow<JobStep, Runner, JobName | T> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
@@ -148,25 +154,35 @@ export class Workflow<
           : undefined,
       jobs: Object.fromEntries(
         await Promise.all(
-          this.jobs.map(
-            async ({
-              name,
-              options: {
-                prettyName,
-                permissions,
-                ifExpression,
-                runsOn,
-                matrix,
-                env,
-                steps,
-                dependsOn,
-                services,
-                timeout,
-                concurrency,
-                outputs,
-                workingDirectory,
-              },
-            }) => [
+          this.jobs.map(async ({ name, options: jobOptions }) => {
+            if ("uses" in jobOptions) {
+              return [
+                name,
+                {
+                  uses: jobOptions.uses,
+                  with: jobOptions.with,
+                  secrets: jobOptions.secrets,
+                },
+              ];
+            }
+
+            const {
+              prettyName,
+              permissions,
+              ifExpression,
+              runsOn,
+              matrix,
+              env,
+              steps,
+              dependsOn,
+              services,
+              timeout,
+              concurrency,
+              outputs,
+              workingDirectory,
+            } = jobOptions;
+
+            return [
               name,
               {
                 name: prettyName,
@@ -234,8 +250,8 @@ export class Workflow<
                 ),
                 outputs,
               },
-            ],
-          ),
+            ];
+          }),
         ),
       ),
     };

@@ -286,4 +286,26 @@ exit 0`,
 
     expect(await workflow.compile()).toMatchSnapshot();
   });
+
+  it("allows creating jobs with no steps, uses and secrets", async () => {
+    const workflow = new Workflow("Uses job")
+      .on("push")
+      .addJob("job1", {
+        uses: "example/example/.github/workflows/example1.yml@main",
+        with: {
+          foo: "foo",
+        },
+        secrets: "inherit",
+      })
+      .addJob("job2", {
+        uses: "example/example/.github/workflows/example2.yml@main",
+        with: {
+          bar: "bar",
+        },
+        secrets: {
+          secret: "super-secret",
+        },
+      });
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
 });

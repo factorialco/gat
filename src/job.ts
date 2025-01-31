@@ -32,6 +32,12 @@ export interface JobOptions<Step, RunnerDefinition, Name> {
   workingDirectory?: string;
 }
 
+export interface UsesJobOptions {
+  uses: string;
+  with?: Record<string, string | number | boolean | object>;
+  secrets?: Record<string, string | number | boolean | object> | "inherit";
+}
+
 export type StringWithNoSpaces<T> = T extends `${string} ${string}`
   ? never
   : T extends ` ${string}`
@@ -42,5 +48,5 @@ export type StringWithNoSpaces<T> = T extends `${string} ${string}`
 
 export interface Job<Step, RunnerDefinition, Name> {
   name: string;
-  options: JobOptions<Step, RunnerDefinition, Name>;
+  options: JobOptions<Step, RunnerDefinition, Name> | UsesJobOptions;
 }
