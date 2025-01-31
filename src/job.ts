@@ -16,7 +16,8 @@ export interface Service {
   options?: string;
   volumes?: string[];
 }
-export interface BaseJobOptions<RunnerDefinition, Name> {
+
+export interface StepsJobOptions<Step, RunnerDefinition, Name> {
   prettyName?: string;
   permissions?: object;
   ifExpression?: string;
@@ -29,15 +30,13 @@ export interface BaseJobOptions<RunnerDefinition, Name> {
   matrix?: Matrix | string;
   outputs?: Record<string, string>;
   workingDirectory?: string;
-}
-
-export interface StepsJobOptions<Step, RunnerDefinition, Name>
-  extends BaseJobOptions<RunnerDefinition, Name> {
   steps: Step[];
 }
 
-export interface UsesJobOptions<RunnerDefinition, Name>
-  extends BaseJobOptions<RunnerDefinition, Name> {
+export interface UsesJobOptions<Name> {
+  prettyName?: string;
+  dependsOn?: Array<Name>;
+  ifExpression?: string;
   uses: string;
   with?: Record<string, string | number | boolean | object>;
   secrets?: Record<string, string | number | boolean | object> | "inherit";
@@ -53,7 +52,5 @@ export type StringWithNoSpaces<T> = T extends `${string} ${string}`
 
 export interface Job<Step, RunnerDefinition, Name> {
   name: string;
-  options:
-    | StepsJobOptions<Step, RunnerDefinition, Name>
-    | UsesJobOptions<RunnerDefinition, Name>;
+  options: StepsJobOptions<Step, RunnerDefinition, Name> | UsesJobOptions<Name>;
 }

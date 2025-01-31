@@ -91,15 +91,11 @@ on:
   push: null
 jobs:
   job1:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 15
     uses: example/example/.github/workflows/example1.yml@main
     with:
       foo: foo
     secrets: inherit
   job2:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 15
     uses: example/example/.github/workflows/example2.yml@main
     with:
       bar: bar

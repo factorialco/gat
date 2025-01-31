@@ -108,7 +108,7 @@ export class Workflow<
     name: StringWithNoSpaces<T>,
     options:
       | StepsJobOptions<JobStep, Runner, JobName>
-      | UsesJobOptions<Runner, JobName>,
+      | UsesJobOptions<JobName>,
   ): Workflow<JobStep, Runner, JobName | T> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
@@ -157,6 +157,22 @@ export class Workflow<
       jobs: Object.fromEntries(
         await Promise.all(
           this.jobs.map(async ({ name, options: jobOptions }) => {
+            if ("uses" in jobOptions) {
+              const { prettyName, ifExpression, dependsOn } = jobOptions;
+
+              return [
+                name,
+                {
+                  name: prettyName,
+                  if: ifExpression,
+                  needs: dependsOn,
+                  uses: jobOptions.uses,
+                  with: jobOptions.with,
+                  secrets: jobOptions.secrets,
+                },
+              ];
+            }
+
             const {
               prettyName,
               permissions,
@@ -172,66 +188,49 @@ export class Workflow<
               workingDirectory,
             } = jobOptions;
 
-            const computedOptions = {
-              name: prettyName,
-              permissions,
-              if: ifExpression,
-              "runs-on": runsOn ?? this.defaultRunner(),
-              "timeout-minutes": timeout ?? 15,
-              needs: dependsOn,
-              services,
-              concurrency: concurrency
-                ? {
-                    group: `${kebabCase(this.name)}-${name}-${
-                      concurrency.groupSuffix
-                    }`,
-                    "cancel-in-progress": concurrency.cancelPrevious,
-                  }
-                : undefined,
-              strategy: matrix
-                ? {
-                    "fail-fast": false,
-                    matrix:
-                      typeof matrix === "string"
-                        ? matrix
-                        : {
-                            ...Object.fromEntries(
-                              matrix.elements.map(({ id, options }) => [
-                                id,
-                                options,
-                              ]),
-                            ),
-                            include: matrix.extra,
-                          },
-                  }
-                : undefined,
-              env,
-              defaults: workingDirectory
-                ? {
-                    run: {
-                      "working-directory": workingDirectory,
-                    },
-                  }
-                : undefined,
-            };
-
-            if ("uses" in jobOptions) {
-              return [
-                name,
-                {
-                  ...computedOptions,
-                  uses: jobOptions.uses,
-                  with: jobOptions.with,
-                  secrets: jobOptions.secrets,
-                  outputs,
-                },
-              ];
-            }
-
             return [
               name,
               {
-                ...computedOptions,
+                name: prettyName,
+                permissions,
+                if: ifExpression,
+                "runs-on": runsOn ?? this.defaultRunner(),
+                "timeout-minutes": timeout ?? 15,
+                needs: dependsOn,
+                services,
+                concurrency: concurrency
+                  ? {
+                      group: `${kebabCase(this.name)}-${name}-${
+                        concurrency.groupSuffix
+                      }`,
+                      "cancel-in-progress": concurrency.cancelPrevious,
+                    }
+                  : undefined,
+                strategy: matrix
+                  ? {
+                      "fail-fast": false,
+                      matrix:
+                        typeof matrix === "string"
+                          ? matrix
+                          : {
+                              ...Object.fromEntries(
+                                matrix.elements.map(({ id, options }) => [
+                                  id,
+                                  options,
+                                ]),
+                              ),
+                              include: matrix.extra,
+                            },
+                    }
+                  : undefined,
+                env,
+                defaults: workingDirectory
+                  ? {
+                      run: {
+                        "working-directory": workingDirectory,
+                      },
+                    }
+                  : undefined,
                 steps: await Promise.all(
                   jobOptions.steps.map(async (step) => {
                     const {
