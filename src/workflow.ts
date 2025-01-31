@@ -8,7 +8,7 @@ import axios from "axios";
 import {
   ConcurrencyGroup,
   Job,
-  JobOptions,
+  StepsJobOptions,
   StringWithNoSpaces,
   UsesJobOptions,
 } from "./job";
@@ -106,7 +106,9 @@ export class Workflow<
 
   addJob<T extends string>(
     name: StringWithNoSpaces<T>,
-    options: JobOptions<JobStep, Runner, JobName> | UsesJobOptions,
+    options:
+      | StepsJobOptions<JobStep, Runner, JobName>
+      | UsesJobOptions<Runner, JobName>,
   ): Workflow<JobStep, Runner, JobName | T> {
     this.jobs = [...this.jobs, { name, options }];
     return this;
@@ -155,17 +157,6 @@ export class Workflow<
       jobs: Object.fromEntries(
         await Promise.all(
           this.jobs.map(async ({ name, options: jobOptions }) => {
-            if ("uses" in jobOptions) {
-              return [
-                name,
-                {
-                  uses: jobOptions.uses,
-                  with: jobOptions.with,
-                  secrets: jobOptions.secrets,
-                },
-              ];
-            }
-
             const {
               prettyName,
               permissions,
@@ -173,7 +164,6 @@ export class Workflow<
               runsOn,
               matrix,
               env,
-              steps,
               dependsOn,
               services,
               timeout,
@@ -182,51 +172,68 @@ export class Workflow<
               workingDirectory,
             } = jobOptions;
 
+            const computedOptions = {
+              name: prettyName,
+              permissions,
+              if: ifExpression,
+              "runs-on": runsOn ?? this.defaultRunner(),
+              "timeout-minutes": timeout ?? 15,
+              needs: dependsOn,
+              services,
+              concurrency: concurrency
+                ? {
+                    group: `${kebabCase(this.name)}-${name}-${
+                      concurrency.groupSuffix
+                    }`,
+                    "cancel-in-progress": concurrency.cancelPrevious,
+                  }
+                : undefined,
+              strategy: matrix
+                ? {
+                    "fail-fast": false,
+                    matrix:
+                      typeof matrix === "string"
+                        ? matrix
+                        : {
+                            ...Object.fromEntries(
+                              matrix.elements.map(({ id, options }) => [
+                                id,
+                                options,
+                              ]),
+                            ),
+                            include: matrix.extra,
+                          },
+                  }
+                : undefined,
+              env,
+              defaults: workingDirectory
+                ? {
+                    run: {
+                      "working-directory": workingDirectory,
+                    },
+                  }
+                : undefined,
+              outputs,
+            };
+
+            if ("uses" in jobOptions) {
+              return [
+                name,
+                {
+                  ...computedOptions,
+                  uses: jobOptions.uses,
+                  with: jobOptions.with,
+                  secrets: jobOptions.secrets,
+                },
+              ];
+            }
+
             return [
               name,
               {
-                name: prettyName,
-                permissions,
-                if: ifExpression,
-                "runs-on": runsOn ?? this.defaultRunner(),
-                "timeout-minutes": timeout ?? 15,
-                needs: dependsOn,
-                services,
-                concurrency: concurrency
-                  ? {
-                      group: `${kebabCase(this.name)}-${name}-${
-                        concurrency.groupSuffix
-                      }`,
-                      "cancel-in-progress": concurrency.cancelPrevious,
-                    }
-                  : undefined,
-                strategy: matrix
-                  ? {
-                      "fail-fast": false,
-                      matrix:
-                        typeof matrix === "string"
-                          ? matrix
-                          : {
-                              ...Object.fromEntries(
-                                matrix.elements.map(({ id, options }) => [
-                                  id,
-                                  options,
-                                ]),
-                              ),
-                              include: matrix.extra,
-                            },
-                    }
-                  : undefined,
-                env,
-                defaults: workingDirectory
-                  ? {
-                      run: {
-                        "working-directory": workingDirectory,
-                      },
-                    }
-                  : undefined,
+                ...computedOptions,
                 steps: await Promise.all(
-                  steps.map(async (step) => {
+                  jobOptions.steps.map(async (step) => {
                     const {
                       id,
                       name,
@@ -248,7 +255,6 @@ export class Workflow<
                     };
                   }),
                 ),
-                outputs,
               },
             ];
           }),

@@ -1,7 +1,8 @@
 import { Workflow } from "./workflow";
 import {
   type ConcurrencyGroup,
-  type JobOptions,
+  type StepsJobOptions,
+  type UsesJobOptions,
   type Matrix,
   type Service,
 } from "./job";
@@ -13,7 +14,8 @@ export {
   UseStep,
   BaseStep,
   ConcurrencyGroup,
-  JobOptions,
+  StepsJobOptions,
+  UsesJobOptions,
   Matrix,
   Service,
 };
