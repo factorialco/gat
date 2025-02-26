@@ -12,20 +12,20 @@ export type EventName =
 export type EventOptions<T extends EventName> = T extends "push"
   ? PushEventOptions
   : T extends "pull_request"
-  ? PullRequestEventOptions
-  : T extends "pull_request_review"
-  ? PullRequestReviewEventOptions
-  : T extends "workflow_run"
-  ? WorkflowRunEventOptions
-  : T extends "workflow_dispatch"
-  ? WorkflowDispatchEventOptions
-  : T extends "workflow_call"
-  ? WorkflowCallEventOptions
-  : T extends "schedule"
-  ? ScheduleEventOptions
-  : T extends "repository_dispatch"
-  ? RepositoryDispatchEventOptions
-  : never;
+    ? PullRequestEventOptions
+    : T extends "pull_request_review"
+      ? PullRequestReviewEventOptions
+      : T extends "workflow_run"
+        ? WorkflowRunEventOptions
+        : T extends "workflow_dispatch"
+          ? WorkflowDispatchEventOptions
+          : T extends "workflow_call"
+            ? WorkflowCallEventOptions
+            : T extends "schedule"
+              ? ScheduleEventOptions
+              : T extends "repository_dispatch"
+                ? RepositoryDispatchEventOptions
+                : never;
 
 interface PushEventOptions {
   branches?: string[];

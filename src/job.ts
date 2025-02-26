@@ -45,10 +45,10 @@ export interface UsesJobOptions<Name> {
 export type StringWithNoSpaces<T> = T extends `${string} ${string}`
   ? never
   : T extends ` ${string}`
-  ? never
-  : T extends `${string} `
-  ? never
-  : T;
+    ? never
+    : T extends `${string} `
+      ? never
+      : T;
 
 export interface Job<Step, RunnerDefinition, Name> {
   name: string;
