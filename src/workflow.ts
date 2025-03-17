@@ -33,32 +33,51 @@ interface Tag {
   };
 }
 
+interface CompileOptions {
+  filePath?: string;
+  lockFilePath?: string;
+  writeLockFile?: boolean;
+}
+
 export type RunnerDefinition =
   | string
   | { group: string; labels?: string[] }
   | ["self-hosted", string];
 
-const chainAttackCache: Record<string, string> = {};
+const supplyChainAttack = async (
+  step: Step,
+  compileOptions: CompileOptions,
+) => {
+  const { lockFilePath, writeLockFile = false } = compileOptions;
 
-const supplyChainAttack = async (step: Step, enabled: boolean = false) => {
   if (!isUseStep(step)) return;
 
-  if (!enabled) return step.uses;
+  // The user is not interested in frozen sha versions
+  if (!lockFilePath) return step.uses;
 
   const uses = step.uses;
 
-  if (!uses) return uses;
-
-  if (chainAttackCache[uses]) return chainAttackCache[uses];
-
   const match = uses.match(/(?<repository>.*)@(?<version>.*)/);
 
+  // The uses is not a valid Github action with a tag
   if (!match) return uses;
 
   const { repository, version } = match.groups as {
     repository: string;
     version: string;
   };
+
+  const chainAttackCache = fs.existsSync(lockFilePath)
+    ? JSON.parse(fs.readFileSync(lockFilePath, "utf8"))
+    : {};
+
+  if (chainAttackCache[uses]) return chainAttackCache[uses];
+
+  if (!writeLockFile) {
+    throw new Error(
+      `Unable to retrieve ${uses} from lock file and writeLockFile is false`,
+    );
+  }
 
   const response = await axios.get(
     `https://api.github.com/repos/${repository}/tags`,
@@ -67,11 +86,17 @@ const supplyChainAttack = async (step: Step, enabled: boolean = false) => {
 
   const tag = tags.find((tag) => tag.name === version);
 
-  if (!tag) return uses;
+  if (!tag) {
+    throw new Error(`Unable to retrieve ${uses} from Github tags`);
+  }
 
   const result = `${repository}@${tag.commit.sha}`;
 
   chainAttackCache[uses] = result;
+
+  if (writeLockFile) {
+    fs.writeFileSync(lockFilePath, JSON.stringify(chainAttackCache, null, 2));
+  }
 
   return result;
 };
@@ -128,7 +153,7 @@ export class Workflow<
     return "ubuntu-22.04";
   }
 
-  async compile(filepath?: string) {
+  async compile(compileOptions: CompileOptions = {}) {
     const result = {
       name: this.name,
       on: Object.fromEntries(
@@ -250,7 +275,7 @@ export class Workflow<
                       "working-directory": workingDirectory,
                       "timeout-minutes": timeout,
                       ...options,
-                      uses: await supplyChainAttack(step),
+                      uses: await supplyChainAttack(step, compileOptions),
                     };
                   }),
                 ),
@@ -271,10 +296,10 @@ export class Workflow<
       },
     )}`;
 
-    if (!filepath) return compiled;
+    if (!compileOptions.filePath) return compiled;
 
     return writeFilePromise(
-      path.join(process.cwd(), ".github", "workflows", filepath),
+      path.join(process.cwd(), ".github", "workflows", compileOptions.filePath),
       compiled,
     );
   }
