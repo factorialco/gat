@@ -1,10 +1,10 @@
+import fs from "fs";
 import { dump } from "js-yaml";
 import kebabCase from "lodash/kebabCase";
-import fs from "fs";
 import path from "path";
 import { promisify } from "util";
-import { Octokit } from "@octokit/rest";
 
+import type { Event, EventName, EventOptions } from "./event";
 import {
   ConcurrencyGroup,
   Job,
@@ -12,7 +12,6 @@ import {
   StringWithNoSpaces,
   UsesJobOptions,
 } from "./job";
-import type { Event, EventName, EventOptions } from "./event";
 import { type Step, isUseStep } from "./step";
 
 const writeFilePromise = promisify(fs.writeFile);
@@ -26,10 +25,9 @@ interface EnvVar {
   value: string;
 }
 
-interface CompileOptions {
+interface WorkflowCompileOptions {
   filePath?: string;
-  lockFilePath?: string;
-  writeLockFile?: boolean;
+  resolvedActions?: Record<string, string>;
 }
 
 export type RunnerDefinition =
@@ -37,77 +35,15 @@ export type RunnerDefinition =
   | { group: string; labels?: string[] }
   | ["self-hosted", string];
 
-let firstCompileCall = true;
-
 const supplyChainAttack = async (
   step: Step,
-  compileOptions: CompileOptions,
+  resolvedActions: Record<string, string>,
 ) => {
-  const { lockFilePath, writeLockFile = false } = compileOptions;
-
   if (!isUseStep(step)) return;
-
-  // The user is not interested in frozen sha versions
-  if (!lockFilePath) return step.uses;
 
   const uses = step.uses;
 
-  const match = uses.match(/(?<repository>.*)@(?<version>.*)/);
-
-  // The uses is not a valid Github action with a tag
-  if (!match) return uses;
-
-  const { repository, version } = match.groups as {
-    repository: string;
-    version: string;
-  };
-
-  if (firstCompileCall && writeLockFile && fs.existsSync(lockFilePath)) {
-    firstCompileCall = false;
-
-    fs.rmSync(lockFilePath);
-  }
-
-  const chainAttackCache = fs.existsSync(lockFilePath)
-    ? JSON.parse(fs.readFileSync(lockFilePath, "utf8"))
-    : {};
-
-  if (chainAttackCache[uses]) return chainAttackCache[uses];
-
-  if (!writeLockFile) {
-    throw new Error(
-      `Unable to retrieve ${uses} from lock file and writeLockFile is false`,
-    );
-  }
-
-  const [owner, repo] = repository.split("/");
-
-  const octokit = process.env.GITHUB_TOKEN
-    ? new Octokit({
-        auth: process.env.GITHUB_TOKEN,
-      })
-    : new Octokit();
-
-  const response = await octokit.rest.repos.listTags({
-    owner,
-    repo,
-  });
-
-  const tag = response.data.find((tag) => tag.name === version);
-
-  if (!tag) {
-    throw new Error(`Unable to retrieve ${uses} from Github tags`);
-  }
-
-  const result = `${repository}@${tag.commit.sha}`;
-
-  chainAttackCache[uses] = result;
-
-  if (writeLockFile) {
-    fs.writeFileSync(lockFilePath, JSON.stringify(chainAttackCache, null, 2));
-  }
-
-  return result;
+  return resolvedActions[uses] ?? uses;
 };
 
 export class Workflow<
@@ -162,7 +98,7 @@ export class Workflow<
     return "ubuntu-22.04";
   }
 
-  async compile(compileOptions: CompileOptions = {}) {
+  async compile(compileOptions: WorkflowCompileOptions = {}) {
     const result = {
       name: this.name,
       on: Object.fromEntries(
@@ -284,7 +220,10 @@ export class Workflow<
                       "working-directory": workingDirectory,
                       "timeout-minutes": timeout,
                       ...options,
-                      uses: await supplyChainAttack(step, compileOptions),
+                      uses: await supplyChainAttack(
+                        step,
+                        compileOptions.resolvedActions ?? {},
+                      ),
                     };
                   }),
                 ),
