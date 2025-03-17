@@ -3,8 +3,8 @@ import { Octokit } from "@octokit/rest";
 
 import { Workflow } from "./workflow";
 
-interface CompileOptions {
-  templates: Record<string, Workflow>;
+interface CompileOptions<T extends Workflow> {
+  templates: Record<string, T>;
   lockFilePath: string;
   writeLockFile: boolean;
 }
@@ -67,7 +67,9 @@ const createLockFile = async (
   fs.writeFileSync(lockFilePath, JSON.stringify(resolvedActions, null, 2));
 };
 
-export const compileTemplates = async (options: CompileOptions) => {
+export const compileTemplates = async <T extends Workflow>(
+  options: CompileOptions<T>,
+) => {
   const { templates, lockFilePath, writeLockFile } = options;
 
   if (writeLockFile) {
