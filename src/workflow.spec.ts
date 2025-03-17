@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { RunStep, UseStep } from "./step";
 import { Workflow } from "./workflow";
+import fs from "fs";
 
 describe("Workflow", () => {
   it("generates a simple workflow", async () => {
@@ -307,5 +308,51 @@ exit 0`,
         },
       });
     expect(await workflow.compile()).toMatchSnapshot();
+  });
+
+  it("supports supply chain attack, without writing the lock file", async () => {
+    const workflow = new Workflow("Supply chain attack");
+
+    workflow.on("push").addJob("job1", {
+      steps: [
+        { name: "Do something", uses: "tj-actions/changed-files@v45.0.7" },
+      ],
+    });
+
+    fs.writeFileSync(
+      "/tmp/lockfile1.json",
+      JSON.stringify(
+        {
+          "tj-actions/changed-files@v45.0.7":
+            "tj-actions/changed-files@youhavebeenhacked",
+        },
+        null,
+        2,
+      ),
+    );
+
+    expect(
+      await workflow.compile({
+        lockFilePath: "/tmp/lockfile1.json",
+        writeLockFile: false,
+      }),
+    ).toMatchSnapshot();
+  });
+
+  it("supports supply chain attack, with writing the lock file", async () => {
+    const workflow = new Workflow("Supply chain attack");
+
+    workflow.on("push").addJob("job1", {
+      steps: [
+        { name: "Do something", uses: "tj-actions/changed-files@v45.0.7" },
+      ],
+    });
+
+    expect(
+      await workflow.compile({
+        lockFilePath: "/tmp/lockfile2.json",
+        writeLockFile: true,
+      }),
+    ).toMatchSnapshot();
   });
 });
