@@ -7,6 +7,7 @@ import {
   type Service,
 } from "./job";
 import { type RunStep, type UseStep, type BaseStep } from "./step";
+import { compileTemplates } from "./template";
 
 export {
   Workflow,
@@ -18,4 +19,5 @@ export {
   UsesJobOptions,
   Matrix,
   Service,
+  compileTemplates,
 };
