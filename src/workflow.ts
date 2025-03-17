@@ -3,7 +3,7 @@ import kebabCase from "lodash/kebabCase";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
-import axios from "axios";
+import { Octokit } from "@octokit/rest";
 
 import {
   ConcurrencyGroup,
@@ -26,13 +26,6 @@ interface EnvVar {
   value: string;
 }
 
-interface Tag {
-  name: string;
-  commit: {
-    sha: string;
-  };
-}
-
 interface CompileOptions {
   filePath?: string;
   lockFilePath?: string;
@@ -43,6 +36,8 @@ export type RunnerDefinition =
   | string
   | { group: string; labels?: string[] }
   | ["self-hosted", string];
+
+let firstCompileCall = true;
 
 const supplyChainAttack = async (
   step: Step,
@@ -67,6 +62,12 @@ const supplyChainAttack = async (
     version: string;
   };
 
+  if (firstCompileCall && writeLockFile && fs.existsSync(lockFilePath)) {
+    firstCompileCall = false;
+
+    fs.rmSync(lockFilePath);
+  }
+
   const chainAttackCache = fs.existsSync(lockFilePath)
     ? JSON.parse(fs.readFileSync(lockFilePath, "utf8"))
     : {};
@@ -79,12 +80,20 @@ const supplyChainAttack = async (
     );
   }
 
-  const response = await axios.get(
-    `https://api.github.com/repos/${repository}/tags`,
-  );
-  const tags = response.data as Tag[];
+  const [owner, repo] = repository.split("/");
 
-  const tag = tags.find((tag) => tag.name === version);
+  const octokit = process.env.GITHUB_TOKEN
+    ? new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+      })
+    : new Octokit();
+
+  const response = await octokit.rest.repos.listTags({
+    owner,
+    repo,
+  });
+
+  const tag = response.data.find((tag) => tag.name === version);
 
   if (!tag) {
     throw new Error(`Unable to retrieve ${uses} from Github tags`);
