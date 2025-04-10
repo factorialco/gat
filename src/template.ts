@@ -49,18 +49,37 @@ const createLockFile = async (
       };
 
       const [owner, repo] = repository.split("/");
-      const response = await octokit.rest.repos.listTags({
-        owner,
-        repo,
-      });
+      if (/^[a-f0-9]{40}$/.test(version)) {
+        // Assume version is a SHA
+        resolvedActions[action] = `${repository}@${version}`;
+      } else {
+        let tag = null;
+        let page = 1;
+        const perPage = 100;
 
-      const tag = response.data.find((tag) => tag.name === version);
+        while (!tag) {
+          const response = await octokit.rest.repos.listTags({
+            owner,
+            repo,
+            per_page: perPage,
+            page,
+          });
 
-      if (!tag) {
-        throw new Error(`Unable to retrieve ${action} from Github tags`);
+          tag = response.data.find((tag) => tag.name === version);
+
+          if (response.data.length < perPage) {
+            break; // No more pages to check
+          }
+
+          page++;
+        }
+
+        if (!tag) {
+          throw new Error(`Unable to retrieve ${action} from Github tags`);
+        }
+
+        resolvedActions[action] = `${repository}@${tag.commit.sha}`;
       }
-
-      resolvedActions[action] = `${repository}@${tag.commit.sha}`;
     }),
   );
 
