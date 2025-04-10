@@ -49,18 +49,23 @@ const createLockFile = async (
       };
 
       const [owner, repo] = repository.split("/");
-      const response = await octokit.rest.repos.listTags({
-        owner,
-        repo,
-      });
+      if (/^[a-f0-9]{40}$/.test(version)) {
+        // Assume version is a SHA
+        resolvedActions[action] = `${repository}@${version}`;
+      } else {
+        const response = await octokit.rest.repos.listTags({
+          owner,
+          repo,
+        });
 
-      const tag = response.data.find((tag) => tag.name === version);
+        const tag = response.data.find((tag) => tag.name === version);
 
-      if (!tag) {
-        throw new Error(`Unable to retrieve ${action} from Github tags`);
+        if (!tag) {
+          throw new Error(`Unable to retrieve ${action} from Github tags`);
+        }
+
+        resolvedActions[action] = `${repository}@${tag.commit.sha}`;
       }
-
-      resolvedActions[action] = `${repository}@${tag.commit.sha}`;
     }),
   );
 
