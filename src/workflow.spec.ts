@@ -332,9 +332,7 @@ exit 0`,
     const workflow = new Workflow("Job Environment");
     workflow.on("push").addJob("job1", {
       environment: "production",
-      steps: [
-        { name: "Do something", run: "echo 'Hello'" },
-      ],
+      steps: [{ name: "Do something", run: "echo 'Hello'" }],
     });
     expect(await workflow.compile()).toMatchSnapshot();
   });

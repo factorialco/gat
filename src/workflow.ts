@@ -128,7 +128,8 @@ export class Workflow<
         await Promise.all(
           this.jobs.map(async ({ name, options: jobOptions }) => {
             if ("uses" in jobOptions) {
-              const { prettyName, ifExpression, dependsOn, environment } = jobOptions;
+              const { prettyName, ifExpression, dependsOn, environment } =
+                jobOptions;
 
               return [
                 name,
