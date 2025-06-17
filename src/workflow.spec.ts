@@ -327,4 +327,13 @@ exit 0`,
       }),
     ).toMatchSnapshot();
   });
+
+  it("allows setting environment on a job", async () => {
+    const workflow = new Workflow("Job Environment");
+    workflow.on("push").addJob("job1", {
+      environment: "production",
+      steps: [{ name: "Do something", run: "echo 'Hello'" }],
+    });
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
 });

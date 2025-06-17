@@ -128,7 +128,8 @@ export class Workflow<
         await Promise.all(
           this.jobs.map(async ({ name, options: jobOptions }) => {
             if ("uses" in jobOptions) {
-              const { prettyName, ifExpression, dependsOn } = jobOptions;
+              const { prettyName, ifExpression, dependsOn, environment } =
+                jobOptions;
 
               return [
                 name,
@@ -139,6 +140,7 @@ export class Workflow<
                   uses: jobOptions.uses,
                   with: jobOptions.with,
                   secrets: jobOptions.secrets,
+                  environment,
                 },
               ];
             }
@@ -156,6 +158,7 @@ export class Workflow<
               concurrency,
               outputs,
               workingDirectory,
+              environment,
             } = jobOptions;
 
             return [
@@ -194,6 +197,7 @@ export class Workflow<
                     }
                   : undefined,
                 env,
+                environment,
                 defaults: workingDirectory
                   ? {
                       run: {

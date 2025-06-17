@@ -30,6 +30,7 @@ export interface StepsJobOptions<Step, RunnerDefinition, Name> {
   matrix?: Matrix | string;
   outputs?: Record<string, string>;
   workingDirectory?: string;
+  environment?: string;
   steps: Step[];
 }
 
@@ -40,6 +41,7 @@ export interface UsesJobOptions<Name> {
   uses: string;
   with?: Record<string, string | number | boolean | object>;
   secrets?: Record<string, string | number | boolean | object> | "inherit";
+  environment?: string;
 }
 
 export type StringWithNoSpaces<T> = T extends `${string} ${string}`
