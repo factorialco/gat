@@ -135,6 +135,27 @@ describe("Workflow", () => {
     expect(await workflow.compile()).toMatchSnapshot();
   });
 
+  it("allows a job matrix with max-parallel", async () => {
+    const workflow = new Workflow("Matrix with max parallel");
+    workflow.on("push").addJob("job1", {
+      matrix: {
+        elements: [
+          {
+            id: "food",
+            options: ["🍕", "🍔", "🌮"],
+          },
+        ],
+        maxParallel: 2,
+      },
+      steps: [
+        {
+          run: "echo ${{ matrix.food }}",
+        },
+      ],
+    });
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
+
   it("allows uses steps", async () => {
     const workflow = new Workflow("Uses steps");
     workflow

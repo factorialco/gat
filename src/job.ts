@@ -6,6 +6,7 @@ export type ConcurrencyGroup = {
 export interface Matrix {
   elements: Array<{ id: string; options: Array<string | number | boolean> }>;
   extra?: Array<Record<string, string | number | boolean>>;
+  maxParallel?: number;
 }
 
 export interface Service {

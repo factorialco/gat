@@ -182,6 +182,10 @@ export class Workflow<
                 strategy: matrix
                   ? {
                       "fail-fast": false,
+                      "max-parallel":
+                        typeof matrix !== "string" && matrix.maxParallel != null
+                          ? matrix.maxParallel
+                          : undefined,
                       matrix:
                         typeof matrix === "string"
                           ? matrix
