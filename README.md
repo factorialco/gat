@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="gat.png" width="200" />
+</p>
+
 # gat ![Build](https://github.com/factorialco/gat/actions/workflows/build.yml/badge.svg?branch=main) [![npm version](https://badge.fury.io/js/@factorialco%2Fgat.svg)](https://badge.fury.io/js/@factorialco%2Fgat)
 
 The `gat` project is a tool to **write your GitHub Actions workflows using TypeScript**.
@@ -24,7 +28,7 @@ The `gat` CLI assumes that you have a `index.ts` file inside `.github/templates`
 // .github/templates/index.ts
 import { Workflow } from "@factorialco/gat";
 
-new Workflow("My first workflow")
+await new Workflow("My first workflow")
   .on("push")
   .addJob("test", {
     steps: [
@@ -39,10 +43,10 @@ new Workflow("My first workflow")
       },
     ],
   })
-  .compile("my-first-workflow.yml");
+  .compile({ filePath: "my-first-workflow.yml" });
 ```
 
-Notice that you need to call the `compile()` method at the end, passing the file name of the generated Github Actions workflow.
+Notice that you need to call the `compile()` method at the end, passing an options object with the `filePath` of the generated GitHub Actions workflow.
 
 ### Compiling your templates
 
@@ -75,11 +79,47 @@ Notice that the job includes a few assumptions like the `runs-on` and `timeout-m
 
 ### Create your own workflow class
 
-TODO
+You can create factory functions that return pre-configured `Workflow` instances with shared settings. This avoids duplication across your templates:
+
+```ts
+// .github/templates/helpers.ts
+import { Workflow } from "@factorialco/gat";
+
+export function createWorkflow(name: string) {
+  return new Workflow(name)
+    .setEnv("NODE_ENV", "production")
+    .on("push", { branches: ["main"] });
+}
+```
+
+Then use it in your templates:
+
+```ts
+// .github/templates/index.ts
+import { createWorkflow } from "./helpers";
+
+await createWorkflow("Test")
+  .addJob("test", {
+    steps: [{ run: "npm test" }],
+  })
+  .compile({ filePath: "test.yml" });
+
+await createWorkflow("Lint")
+  .addJob("lint", {
+    steps: [{ run: "npm run lint" }],
+  })
+  .compile({ filePath: "lint.yml" });
+```
+
+This way all your workflows share the same environment variables, triggers, and any other defaults you configure in the factory function.
 
 ## Contributing
 
-TODO
+1. Fork the repository and clone it locally
+2. Install dependencies: `npm install`
+3. Run the tests: `npm test`
+4. Make your changes and ensure tests pass
+5. Submit a pull request
 
 ## License
 
