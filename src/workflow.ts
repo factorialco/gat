@@ -56,6 +56,7 @@ export class Workflow<
   defaultOptions: DefaultOptions | null;
   env: EnvVar[];
   concurrencyGroup?: ConcurrencyGroup | null;
+  runName?: string;
 
   constructor(public name: string) {
     this.events = [];
@@ -89,6 +90,11 @@ export class Workflow<
     return this;
   }
 
+  setRunName(runName: string) {
+    this.runName = runName;
+    return this;
+  }
+
   setConcurrencyGroup(concurrencyGroup: ConcurrencyGroup | null) {
     this.concurrencyGroup = concurrencyGroup;
     return this;
@@ -101,6 +107,7 @@ export class Workflow<
   async compile(compileOptions: WorkflowCompileOptions = {}) {
     const result = {
       name: this.name,
+      "run-name": this.runName,
       on: Object.fromEntries(
         this.events.map(({ name, options }) => [
           name,
