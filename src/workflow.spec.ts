@@ -349,6 +349,22 @@ exit 0`,
     ).toMatchSnapshot();
   });
 
+  it("supports a workflow-level run name", async () => {
+    const workflow = new Workflow("With run name")
+      .setRunName(
+        "Preview ${{ inputs.domain }} #${{ inputs.environmentIndex }}",
+      )
+      .on("workflow_dispatch", {
+        inputs: {
+          domain: { description: "A domain", required: true },
+        },
+      })
+      .addJob("job1", {
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
+
   it("allows setting environment on a job", async () => {
     const workflow = new Workflow("Job Environment");
     workflow.on("push").addJob("job1", {
