@@ -236,6 +236,15 @@ describe("Workflow", () => {
     expect(await workflow.compile()).toMatchSnapshot();
   });
 
+  it("supports merge_group event", async () => {
+    const workflow = new Workflow("Merge group")
+      .on("merge_group", { types: ["checks_requested"] })
+      .addJob("job1", {
+        steps: [{ name: "Do something", run: "exit 0" }],
+      });
+    expect(await workflow.compile()).toMatchSnapshot();
+  });
+
   it("supports a pretty name for the job", async () => {
     const workflow = new Workflow("Job with pretty name")
       .on("push")
