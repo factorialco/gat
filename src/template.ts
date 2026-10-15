@@ -7,12 +7,12 @@ interface CompileOptions<T extends Workflow> {
   templates: Record<string, T>;
   lockFilePath: string;
   writeLockFile: boolean;
+  failOnUnlockedActions?: boolean;
 }
 
-const createLockFile = async (
-  templates: Record<string, Workflow>,
-  lockFilePath: string,
-) => {
+const SHA_PATTERN = /^[a-f0-9]{40}$/;
+
+const collectActions = (templates: Record<string, Workflow>) => {
   const actions = Object.values(templates).reduce<string[]>((acc, template) => {
     template.jobs.forEach((job) => {
       if ("steps" in job.options) {
@@ -27,7 +27,30 @@ const createLockFile = async (
     return acc;
   }, []);
 
-  const uniqueActions = [...new Set(actions)];
+  return [...new Set(actions)];
+};
+
+// Local and docker actions are not tag references, so the lock file never
+// holds an entry for them.
+const isLockable = (action: string) =>
+  !action.startsWith("./") && !action.startsWith("docker://");
+
+const findUnlockedActions = (
+  templates: Record<string, Workflow>,
+  resolvedActions: Record<string, string>,
+) =>
+  collectActions(templates).filter((action) => {
+    if (!isLockable(action) || action in resolvedActions) return false;
+
+    const version = action.split("@").pop() ?? "";
+    return !SHA_PATTERN.test(version);
+  });
+
+const createLockFile = async (
+  templates: Record<string, Workflow>,
+  lockFilePath: string,
+) => {
+  const uniqueActions = collectActions(templates);
 
   const octokit = process.env.GITHUB_TOKEN
     ? new Octokit({
@@ -49,7 +72,7 @@ const createLockFile = async (
       };
 
       const [owner, repo] = repository.split("/");
-      if (/^[a-f0-9]{40}$/.test(version)) {
+      if (SHA_PATTERN.test(version)) {
         // Assume version is a SHA
         resolvedActions[action] = `${repository}@${version}`;
       } else {
@@ -89,7 +112,8 @@ const createLockFile = async (
 export const compileTemplates = async <T extends Workflow>(
   options: CompileOptions<T>,
 ) => {
-  const { templates, lockFilePath, writeLockFile } = options;
+  const { templates, lockFilePath, writeLockFile, failOnUnlockedActions } =
+    options;
 
   if (writeLockFile) {
     await createLockFile(templates, lockFilePath);
@@ -98,6 +122,19 @@ export const compileTemplates = async <T extends Workflow>(
   const resolvedActions = fs.existsSync(lockFilePath)
     ? JSON.parse(fs.readFileSync(lockFilePath, "utf8"))
     : {};
+
+  // A step whose action is missing from the lock file compiles with its
+  // mutable tag, which silently undoes the pinning the lock file exists for.
+  if (failOnUnlockedActions) {
+    const unlocked = findUnlockedActions(templates, resolvedActions);
+
+    if (unlocked.length > 0) {
+      throw new Error(
+        `Actions missing from ${lockFilePath}, regenerate it with writeLockFile enabled:\n` +
+          unlocked.map((action) => `  - ${action}`).join("\n"),
+      );
+    }
+  }
 
   return Promise.all(
     Object.entries(templates).map(([filePath, template]) =>
