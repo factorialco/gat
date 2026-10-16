@@ -86,4 +86,27 @@ describe("compileTemplates", () => {
 
     expect(readCompiled()).toContain(`uses: actions/checkout@${LOCKED_SHA}`);
   });
+
+  it("keeps template refs when no lock file is given", async () => {
+    await compileTemplates({
+      templates: buildTemplates("actions/checkout@v4"),
+    });
+
+    expect(readCompiled()).toContain("uses: actions/checkout@v4");
+  });
+
+  it.each([{ writeLockFile: true }, { failOnUnlockedActions: true }])(
+    "rejects %o without a lock file",
+    async (options) => {
+      await expect(
+        compileTemplates({
+          templates: buildTemplates("actions/checkout@v4"),
+          ...options,
+        }),
+      ).rejects.toThrow("need a lockFilePath");
+      expect(fs.readdirSync(path.join(dir, ".github", "workflows"))).toEqual(
+        [],
+      );
+    },
+  );
 });
