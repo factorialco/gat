@@ -77,6 +77,107 @@ jobs:
 
 Notice that the job includes a few assumptions like the `runs-on` and `timeout-minutes` fields. You can change those when adding a new job.
 
+### Compiling many templates
+
+`compileTemplates` compiles a map of output file names to workflows in one call:
+
+```ts
+// .github/templates/index.ts
+import { compileTemplates } from "@factorialco/gat";
+
+import Build from "./build";
+import Deploy from "./deploy";
+
+compileTemplates({
+  templates: {
+    "build.yml": Build,
+    "deploy.yml": Deploy,
+  },
+});
+```
+
+It accepts these options:
+
+| Option                  | Default | Description                                                                |
+| ----------------------- | ------- | -------------------------------------------------------------------------- |
+| `templates`             |         | Map of file names in `.github/workflows` to `Workflow` instances.          |
+| `lockFilePath`          | none    | Path to a `gat-lock.json` file. Without it, gat writes the refs unchanged. |
+| `writeLockFile`         | `false` | Resolve every action tag to a commit SHA and rewrite the lock file.        |
+| `failOnUnlockedActions` | `false` | Stop when a step uses an action that has no entry in the lock file.        |
+
+`writeLockFile` and `failOnUnlockedActions` need a `lockFilePath`.
+
+### Pinning actions
+
+A tag such as `actions/checkout@v4` can move to a different commit. To make sure that a workflow always runs the code you reviewed, pin every action to a commit. You can do this in two ways. Use one of them, not both.
+
+#### Option A: gat lock file
+
+gat replaces each action tag with a commit SHA when it writes the workflow.
+
+1. Add `lockFilePath` and `writeLockFile` to `compileTemplates`, and read `writeLockFile` from an environment variable:
+
+   ```ts
+   compileTemplates({
+     templates,
+     lockFilePath: ".github/templates/gat-lock.json",
+     writeLockFile: process.env.GAT_WRITE_LOCK_FILE === "true",
+     failOnUnlockedActions: true,
+   });
+   ```
+
+2. Run the build once with `GAT_WRITE_LOCK_FILE=true` and a `GITHUB_TOKEN`. gat uses the GitHub API to resolve each tag and writes `gat-lock.json`:
+
+   ```json
+   {
+     "actions/checkout@v4.2.2": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
+   }
+   ```
+
+3. Commit the lock file. Later builds read it and write `uses: actions/checkout@11bd719...` into the workflow.
+
+With `failOnUnlockedActions: true`, the build stops when a step uses an action that has no entry. Without it, gat writes the tag, and that step is not pinned. SHA refs, local `./` actions and `docker://` images are not checked.
+
+The lock file has these limits:
+
+- A write resolves every action that the templates use and rewrites the whole file. It can move other actions to new commits and remove entries that you added by hand. Review the full diff of `gat-lock.json`.
+- Only steps are pinned. Actions that an action calls (transitive dependencies) and reusable workflows are not pinned.
+
+#### Option B: GitHub workflow lockfile
+
+GitHub can pin actions with [workflow dependency lockfiles](https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles). The [`gh actions-lock`](https://github.com/github/gh-actions-lock) extension writes `.github/workflows/actions.lock`, and GitHub Actions runs the locked commit. It also pins transitive dependencies and checks that the action repository did not change owner.
+
+1. Do not set `lockFilePath`. gat then writes the tags from your templates.
+2. Install the extension: `gh extension install github/gh-actions-lock`.
+3. After each build, update the lockfile from the repository root:
+
+   ```bash
+   npx gat build
+   gh actions-lock --no-narrow
+   ```
+
+   Always use `--no-narrow`. Without it, the tool rewrites `uses:` lines in the workflows, for example `@v4` to `@v4.2.2`. The workflows then no longer match the templates, and the next build undoes the change.
+
+4. Commit `actions.lock` with the workflows. Do not edit it by hand.
+5. In CI, check the lockfile on each pull request that changes a workflow. Pin the extension version:
+
+   ```yaml
+   - run: gh extension install github/gh-actions-lock --pin v0.2.0
+     env:
+       GH_TOKEN: ${{ github.token }}
+   - run: gh actions-lock --verify
+     env:
+       GH_TOKEN: ${{ github.token }}
+   ```
+
+   `--verify` fails when a workflow or an action has no entry, and when a locked commit is no longer valid.
+
+The GitHub lockfile is in public preview, and its format can change. If the lockfile is not valid, GitHub ignores it and runs the tags, so the CI check is important.
+
+#### Do not combine the options
+
+With both options, the workflows contain SHAs. `gh actions-lock` warns about each SHA ref. Without `--no-narrow`, it also rewrites the SHAs to tags. Choose one option for the repository.
+
 ### Create your own workflow class
 
 You can create factory functions that return pre-configured `Workflow` instances with shared settings. This avoids duplication across your templates:

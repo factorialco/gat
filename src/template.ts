@@ -5,8 +5,8 @@ import { Workflow } from "./workflow";
 
 interface CompileOptions<T extends Workflow> {
   templates: Record<string, T>;
-  lockFilePath: string;
-  writeLockFile: boolean;
+  lockFilePath?: string;
+  writeLockFile?: boolean;
   failOnUnlockedActions?: boolean;
 }
 
@@ -114,6 +114,22 @@ export const compileTemplates = async <T extends Workflow>(
 ) => {
   const { templates, lockFilePath, writeLockFile, failOnUnlockedActions } =
     options;
+
+  // Without a lock file the workflows keep the refs the templates use, which
+  // is what an external lock such as GitHub's actions.lock expects.
+  if (!lockFilePath) {
+    if (writeLockFile || failOnUnlockedActions) {
+      throw new Error(
+        "writeLockFile and failOnUnlockedActions need a lockFilePath",
+      );
+    }
+
+    return Promise.all(
+      Object.entries(templates).map(([filePath, template]) =>
+        template.compile({ filePath }),
+      ),
+    );
+  }
 
   if (writeLockFile) {
     await createLockFile(templates, lockFilePath);
