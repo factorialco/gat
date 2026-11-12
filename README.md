@@ -136,7 +136,7 @@ gat replaces each action tag with a commit SHA when it writes the workflow.
 
 3. Commit the lock file. Later builds read it and write `uses: actions/checkout@11bd719...` into the workflow.
 
-With `failOnUnlockedActions: true`, the build stops when a step uses an action that has no entry. Without it, gat writes the tag, and that step is not pinned. SHA refs, local `./` actions and `docker://` images are not checked.
+With `failOnUnlockedActions: true`, the build stops when a step uses an action that has no entry. Without it, gat writes the tag, and that step is not pinned. SHA refs, local `./` actions and `docker://` images are not checked or resolved.
 
 The lock file has these limits:
 

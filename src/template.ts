@@ -50,7 +50,7 @@ const createLockFile = async (
   templates: Record<string, Workflow>,
   lockFilePath: string,
 ) => {
-  const uniqueActions = collectActions(templates);
+  const uniqueActions = collectActions(templates).filter(isLockable);
 
   const octokit = process.env.GITHUB_TOKEN
     ? new Octokit({
