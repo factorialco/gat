@@ -87,6 +87,29 @@ describe("compileTemplates", () => {
     expect(readCompiled()).toContain(`uses: actions/checkout@${LOCKED_SHA}`);
   });
 
+  it("writes the lock file without resolving local and docker actions", async () => {
+    const fetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("unexpected request"));
+    const sha = `actions/cache@${"b".repeat(40)}`;
+
+    await compileTemplates({
+      templates: buildTemplates(
+        sha,
+        "./.github/actions/local",
+        `docker://alpine@sha256:${"c".repeat(64)}`,
+      ),
+      lockFilePath,
+      writeLockFile: true,
+      failOnUnlockedActions: true,
+    });
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(JSON.parse(fs.readFileSync(lockFilePath, "utf8"))).toEqual({
+      [sha]: sha,
+    });
+  });
+
   it("keeps template refs when no lock file is given", async () => {
     await compileTemplates({
       templates: buildTemplates("actions/checkout@v4"),
